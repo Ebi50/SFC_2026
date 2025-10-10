@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#DC2626" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Skinfit Cup" />
+    <meta name="description" content="Verwaltungs- und Wertungsapp für den Skinfit Cup" />
+    
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/jpeg" href="/logo.jpg" />
+    <link rel="apple-touch-icon" href="/logo.jpg" />
+    
+    <title>Skinfit Cup Verwaltungsapp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/papaparse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary': '#DC2626',
+              'primary-dark': '#B91C1C',
+              'primary-light': '#FF4D4F',
+              'dark-bg': '#1B1B1F',
+              'secondary': '#212121',
+              'light': '#F5F5F5',
+              'accent': '#FFB347',
+            },
+            fontFamily: {
+              'display': ['Oswald', 'sans-serif'],
+              'sans': ['Inter', 'sans-serif'],
+            },
+            boxShadow: {
+              'card': '0 8px 24px rgba(0, 0, 0, 0.12)',
+              'hover': '0 12px 32px rgba(0, 0, 0, 0.18)',
+            },
+            borderRadius: {
+              'xl': '16px',
+              '2xl': '20px',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      
+      .logo-glow {
+        filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.3));
+      }
+      
+      .gradient-red {
+        background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+      }
+      
+      .gradient-dark {
+        background: linear-gradient(180deg, #1B1B1F 0%, #2D2D32 100%);
+      }
+      
+      .btn-hover {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      
+      .btn-hover:hover {
+        transform: scale(1.03);
+        box-shadow: 0 12px 32px rgba(220, 38, 38, 0.3);
+      }
+      
+      @media screen {
+        .print-only {
+          display: none;
+        }
+      }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+        .print-only {
+          display: block !important;
+        }
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #ffffff !important;
+          font-size: 10pt;
+        }
+        /* Reset the main flex container to a simple block layout for printing */
+        #root > div {
+            display: block !important;
+        }
+        @page {
+          size: A4 portrait;
+          margin: 1.5cm;
+        }
+        main {
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+        main > .bg-white {
+          box-shadow: none !important;
+          padding: 0 !important;
+          min-height: auto !important;
+          border: none !important;
+        }
+        h1, h2, h3, h4 {
+          page-break-after: avoid;
+        }
+        table {
+          page-break-inside: auto;
+          width: 100%;
+          border-collapse: collapse;
+        }
+        tr {
+          page-break-inside: avoid;
+        }
+        thead {
+          display: table-header-group; /* Repeat headers on each page */
+        }
+        th, td {
+          border: 1px solid #dddddd;
+          padding: 4px;
+          text-align: left;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/"
+  }
+}
+</script>
+</head>
+  <body class="bg-light">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      // Deregister any existing service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister();
+            console.log('Service Worker deregistered');
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

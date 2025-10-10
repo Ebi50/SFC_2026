@@ -1,0 +1,14 @@
+[
+  {
+    "id": "s1",
+    "name": "Runde am See",
+    "file": "/gpx/runde_am_see.gpx",
+    "desc": "Flach, 25 km"
+  },
+  {
+    "id": "s2",
+    "name": "Bergtest",
+    "file": "/gpx/bergtest.gpx",
+    "desc": "600 hm, 18 km"
+  }
+]
