@@ -19,7 +19,7 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 const app = express();
-const PORT = process.env.NODE_ENV === 'production' ? 5000 : 3001;
+const PORT = parseInt(process.env.PORT || '') || (process.env.NODE_ENV === 'production' ? 5000 : 3001);
 
 const allowedOrigins = [
   'http://localhost:5000',
@@ -116,9 +116,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
   console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });

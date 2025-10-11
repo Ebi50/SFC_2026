@@ -1,0 +1,21 @@
+# Entwicklungsdateien
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+.env.*
+*.md
+.vscode
+
+# Credentials
+**/google-cloud-credentials.json
+**/service-account-key.json
+**/credentials/*
+
+# Große Dateien
+*.png
+*.pdf
+*.gpx
+*.jpg
+!public/logo.jpg
