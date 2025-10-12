@@ -160,7 +160,7 @@ export const ReglementView: React.FC<ReglementViewProps> = ({ selectedSeason }) 
         <div className="bg-white rounded-xl shadow-md overflow-hidden" style={{ height: 'calc(100vh - 200px)' }}>
           <iframe
             key={iframeKey}
-            src={`${reglementInfo.path}?t=${reglementInfo.uploadDate || Date.now()}`}
+            src={`${reglementInfo.path}?t=${Date.now()}`}
             className="w-full h-full"
             title="Skinfit Cup Reglement"
             style={{ border: 'none' }}
