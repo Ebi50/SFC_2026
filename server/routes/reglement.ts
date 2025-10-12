@@ -55,7 +55,7 @@ router.post('/upload', (req, res, next) => {
   }
 
   try {
-    const filename = `reglement-${seasonYear}.pdf`;
+    const filename = `Reglement_${seasonYear}_03.pdf`;
     
     if (isObjectStorageConfigured()) {
       // Use Object Storage
@@ -128,6 +128,7 @@ router.get('/download/:seasonYear', async (req, res) => {
       const file = await objectStorage.getFile('reglement', reglementData.filename);
 
       if (!file) {
+        console.error(`Reglement file not found in storage: ${reglementData.filename}`);
         return res.status(404).json({ error: 'Kein Reglement vorhanden' });
       }
 
