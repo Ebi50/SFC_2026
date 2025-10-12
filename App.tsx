@@ -183,7 +183,12 @@ const App: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedSeason]);
+  }, []);  // Remove selectedSeason dependency to avoid infinite loop
+
+  // Initial data load
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   // Load season-specific settings when selectedSeason changes
   useEffect(() => {
@@ -553,16 +558,40 @@ const App: React.FC = () => {
           <div className="flex-1 lg:flex-none"></div>
           <div className="flex items-center space-x-2 lg:space-x-4">
             <label htmlFor="season-select" className="font-bold text-gray-700 text-sm lg:text-xl">Saison:</label>
-            <select 
-              id="season-select"
-              value={selectedSeason || ''} 
-              onChange={e => setSelectedSeason(Number(e.target.value))}
-              className="px-3 py-2 lg:px-6 lg:py-4 text-sm lg:text-xl font-bold text-gray-900 border-2 border-gray-400 rounded-lg bg-white shadow-md focus:outline-none focus:ring-2 focus:ring-primary min-w-[100px] lg:min-w-[150px]"
-              aria-label="Saison auswählen"
-              style={{ appearance: 'auto' }}
-            >
-              {availableSeasons.map(s => <option key={s} value={s} className="text-sm lg:text-xl">{s}</option>)}
-            </select>
+            <div className="relative inline-block">
+              <select 
+                id="season-select"
+                value={selectedSeason || ''} 
+                onChange={e => setSelectedSeason(Number(e.target.value))}
+                className="block appearance-none bg-gradient-to-r from-gray-100 to-white w-40 lg:w-56 px-4 py-3 text-xl font-black text-gray-900 border-4 border-gray-300 rounded-xl shadow-xl hover:border-primary focus:border-primary focus:outline-none"
+                style={{
+                  textAlign: 'center',
+                  fontSize: '24px',
+                  letterSpacing: '0.05em'
+                }}
+              >
+                {availableSeasons.map(s => (
+                  <option 
+                    key={s} 
+                    value={s} 
+                    style={{
+                      fontSize: '24px',
+                      fontWeight: 900,
+                      padding: '12px',
+                      backgroundColor: 'white',
+                      color: '#1a202c'
+                    }}
+                  >
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
+                <svg className="h-6 w-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
             <button 
               onClick={() => setNewSeasonModalOpen(true)}
               className="bg-secondary hover:bg-gray-700 text-white font-bold py-2 px-2 lg:px-4 rounded-lg flex items-center space-x-1 lg:space-x-2 transition-transform transform hover:scale-105 text-sm lg:text-base"

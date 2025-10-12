@@ -26,6 +26,11 @@ dist-ssr
 # Database
 *.db
 *.db-journal
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm
+*.backup
 
 # Environment
 .env

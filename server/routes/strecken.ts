@@ -135,13 +135,24 @@ router.get('/download/:filename', async (req, res) => {
     if (isObjectStorageConfigured()) {
       // Use Object Storage
       const objectStorage = new ObjectStorageService();
+      console.log('Fetching GPX file from storage:', filename);
       const file = await objectStorage.getFile('gpx', filename);
 
       if (!file) {
+        console.error('GPX file not found in storage:', filename);
         return res.status(404).json({ error: 'Datei nicht gefunden' });
       }
 
-      await objectStorage.downloadFile(file, res);
+      try {
+        console.log('Starting download of GPX file:', filename);
+        await objectStorage.downloadFile(file, res);
+        console.log('GPX file download completed:', filename);
+      } catch (downloadError) {
+        console.error('Error during file download:', downloadError);
+        if (!res.headersSent) {
+          res.status(500).json({ error: 'Fehler beim Herunterladen der Datei' });
+        }
+      }
     } else {
       // Fallback to filesystem
       const filePath = path.join(GPX_DIR, filename);

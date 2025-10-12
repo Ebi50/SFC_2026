@@ -1,7 +1,10 @@
-import Database from 'better-sqlite3';
-import path from 'path';
+import sqlite from 'better-sqlite3';
+const Database = sqlite;
+import * as path from 'path';
 
-export const db = new Database(path.join(process.cwd(), 'skinfit.db'));
+const dbPath = path.join(process.cwd(), '..', 'database.sqlite3');
+console.log('Connecting to database at:', dbPath);
+export const db = new Database(dbPath);
 
 // Enable foreign keys for CASCADE deletes
 db.pragma('foreign_keys = ON');

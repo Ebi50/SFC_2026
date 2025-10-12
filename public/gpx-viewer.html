@@ -62,9 +62,25 @@
     }).addTo(map);
 
     if (gpxFile) {
-      fetch(gpxFile)
-        .then(response => response.text())
+      console.log('Loading GPX file:', gpxFile);
+      fetch(gpxFile, {
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/gpx+xml, text/plain, */*'
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          console.log('GPX file loaded, content-type:', response.headers.get('content-type'));
+          return response.text();
+        })
         .then(gpxText => {
+          if (!gpxText.includes('<?xml') && !gpxText.includes('<gpx')) {
+            throw new Error('Invalid GPX format');
+          }
+          console.log('GPX content loaded, parsing XML');
           const parser = new DOMParser();
           const gpxDoc = parser.parseFromString(gpxText, 'text/xml');
           

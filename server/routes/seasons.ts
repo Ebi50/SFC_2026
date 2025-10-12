@@ -5,7 +5,26 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
   try {
+    console.log('Fetching seasons from database...');
+    
+    // Debug: List all tables
+    const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all();
+    console.log('Database tables:', tables);
+    
+    // Debug: Check if seasons table exists and has data
+    if (tables.some(t => t.name === 'seasons')) {
+      const count = db.prepare('SELECT COUNT(*) as count FROM seasons').get();
+      console.log('Number of seasons in database:', count);
+      
+      // Debug: Show all seasons
+      const allSeasons = db.prepare('SELECT * FROM seasons').all();
+      console.log('All seasons:', allSeasons);
+    } else {
+      console.log('Seasons table does not exist!');
+    }
+    
     const seasons = db.prepare('SELECT year FROM seasons ORDER BY year DESC').all();
+    console.log('Found seasons:', seasons);
     res.json({ seasons: seasons.map(s => (s as any).year) });
   } catch (error: any) {
     res.status(500).json({ error: error.message });

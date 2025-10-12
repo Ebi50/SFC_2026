@@ -201,18 +201,14 @@ export class ObjectStorageService {
       const [metadata] = await file.getMetadata();
       
       // Set headers with appropriate caching directives
+      const isGpx = metadata.name?.toLowerCase().endsWith('.gpx');
       res.set({
-        "Content-Type": metadata.contentType || "application/octet-stream",
+        "Content-Type": isGpx ? "application/gpx+xml" : (metadata.contentType || "application/octet-stream"),
         "Content-Length": metadata.size,
-        // For PDFs, use stricter caching to ensure fresh content
-        "Cache-Control": metadata.contentType === "application/pdf" 
-          ? "no-cache, must-revalidate, max-age=0"
-          : "public, max-age=3600",
-        // Additional headers to prevent PDF caching
-        ...(metadata.contentType === "application/pdf" ? {
-          "Pragma": "no-cache",
-          "Expires": "0"
-        } : {})
+        "Cache-Control": "no-cache, must-revalidate, max-age=0",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+        "Access-Control-Allow-Headers": "Content-Type"
       });
 
       const stream = file.createReadStream();
