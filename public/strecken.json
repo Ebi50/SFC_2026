@@ -1,14 +1,26 @@
 [
   {
     "id": "s1",
-    "name": "Runde am See",
-    "file": "/gpx/runde_am_see.gpx",
-    "desc": "Flach, 25 km"
+    "name": "Almtal",
+    "file": "/gpx/SFC_Almtal.FIT.gpx",
+    "desc": "Almtal Strecke"
   },
   {
     "id": "s2",
-    "name": "Bergtest",
-    "file": "/gpx/bergtest.gpx",
-    "desc": "600 hm, 18 km"
+    "name": "Hochstein",
+    "file": "/gpx/SFC_Hochstein.FIT.gpx",
+    "desc": "Hochstein Strecke"
+  },
+  {
+    "id": "s3",
+    "name": "Magertl",
+    "file": "/gpx/SFC_Magertl.gpx",
+    "desc": "Magertl Strecke"
+  },
+  {
+    "id": "s4",
+    "name": "Warttal MZF",
+    "file": "/gpx/SFC_Wartttal_MZF.gpx",
+    "desc": "Warttal Mannschaftszeitfahren"
   }
 ]
