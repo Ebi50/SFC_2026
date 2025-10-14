@@ -15,7 +15,7 @@ import streckenRouter from './routes/strecken';
 import seasonsRouter from './routes/seasons';
 
 // Initialize database
-import { initDatabase } from './database';
+import { initDatabase, db } from './database';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,11 +34,30 @@ const allowedOrigins = [
   'http://localhost:3001',
   'https://127.0.0.1:5000',
   'https://127.0.0.1:5001',  // Added for alternative port
+  'https://skinfitcup-238077235347.europe-west1.run.app',  // Production Cloud Run URL
+  'https://sfc-rsv.de',  // Custom domain
+  'https://www.sfc-rsv.de',  // Custom domain with www
   ...(process.env.REPLIT_DOMAINS ? process.env.REPLIT_DOMAINS.split(',').map(d => `https://${d}`) : [])
 ];
 
 app.use(cors({
-  origin: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // For production, allow any https origin from the same domain
+    if (process.env.NODE_ENV === 'production') {
+      if (origin.includes('run.app') || origin.includes('sfc-rsv.de')) {
+        return callback(null, true);
+      }
+    }
+    
+    callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Cookie'],
@@ -63,7 +82,7 @@ app.use(session({
     secure: isProduction,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: 'lax',
+    sameSite: isProduction ? 'none' : 'lax',  // Allow cross-site cookies in production
     path: '/'
   },
   name: 'skinfit.sid'
@@ -73,10 +92,16 @@ app.use(session({
 async function startServer() {
   try {
     // Skip cloud sync in development
-    console.log('🔧 Development mode: Using local database only');
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('🔧 Development mode: Using local database only');
+    } else {
+      console.log('🚀 Production mode: Initializing application');
+    }
 
     // Initialize database (create tables if needed)
+    console.log('📊 Initializing database...');
     initDatabase();
+    console.log('✅ Database initialized successfully');
 
     // Static files
     app.use('/gpx', express.static(path.join(__dirname, '..', 'public', 'gpx')));
@@ -111,9 +136,19 @@ async function startServer() {
 
     // Start server
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
+      console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔐 Session Secret configured: ${SESSION_SECRET ? 'Yes' : 'No'}`);
+      
+      // Test database connection
+      try {
+        const testQuery = db.prepare('SELECT COUNT(*) as count FROM participants').get() as { count: number };
+        console.log(`📊 Database connected: ${testQuery.count} participants found`);
+      } catch (error) {
+        console.error('❌ Database connection test failed:', error);
+      }
+      
       if (process.env.GCS_BUCKET_NAME) {
         console.log(`☁️  Cloud Storage Bucket: ${process.env.GCS_BUCKET_NAME}`);
       }

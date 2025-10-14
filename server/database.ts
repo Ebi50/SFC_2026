@@ -2,7 +2,10 @@ import sqlite from 'better-sqlite3';
 const Database = sqlite;
 import * as path from 'path';
 
-const dbPath = path.join(process.cwd(), '..', 'database.sqlite3');
+// Use current working directory for database in production
+const dbPath = process.env.NODE_ENV === 'production' 
+  ? path.join(process.cwd(), 'database.sqlite3')
+  : path.join(process.cwd(), '..', 'database.sqlite3');
 console.log('Connecting to database at:', dbPath);
 export const db = new Database(dbPath);
 
