@@ -619,9 +619,9 @@ const App: React.FC = () => {
           onSave={handleSaveEvent}
           event={editingEvent}
           allParticipants={participants}
-          eventResults={results.filter(r => r.eventId === editingEvent?.id)}
-          eventTeams={teams.filter(t => t.eventId === editingEvent?.id)}
-          eventTeamMembers={teamMembers.filter(tm => teams.some(t => t.id === tm.teamId && t.eventId === editingEvent?.id))}
+          eventResults={editingEvent ? results.filter(r => r.eventId === editingEvent.id) : []}
+          eventTeams={editingEvent ? teams.filter(t => t.eventId === editingEvent.id) : []}
+          eventTeamMembers={editingEvent ? teamMembers.filter(tm => teams.some(t => t.id === tm.teamId && t.eventId === editingEvent.id)) : []}
           settings={settings}
           selectedSeason={selectedSeason}
         />

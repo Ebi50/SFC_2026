@@ -6,16 +6,16 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 // Import routers
-import participantsRouter from './routes/participants';
-import eventsRouter from './routes/events';
-import authRouter from './routes/auth';
-import reglementRouter from './routes/reglement';
-import settingsRouter from './routes/settings';
-import streckenRouter from './routes/strecken';
-import seasonsRouter from './routes/seasons';
+import participantsRouter from './routes/participants.js';
+import eventsRouter from './routes/events.js';
+import authRouter from './routes/auth.js';
+import reglementRouter from './routes/reglement.js';
+import settingsRouter from './routes/settings.js';
+import streckenRouter from './routes/strecken.js';
+import seasonsRouter from './routes/seasons.js';
 
 // Initialize database
-import { initDatabase } from './database';
+import { initDatabase } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,12 +29,11 @@ const PORT = parseInt(process.env.PORT || '') || 3001;
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:5000',
-  'http://localhost:5001',  // Added for alternative port
+  'http://localhost:5001',
   'http://localhost:3000',
   'http://localhost:3001',
   'https://127.0.0.1:5000',
-  'https://127.0.0.1:5001',  // Added for alternative port
-  ...(process.env.REPLIT_DOMAINS ? process.env.REPLIT_DOMAINS.split(',').map(d => `https://${d}`) : [])
+  'https://127.0.0.1:5001',
 ];
 
 app.use(cors({
@@ -50,21 +49,15 @@ app.use(express.json());
 app.set('trust proxy', 1);
 
 // Session configuration
-const SESSION_SECRET = process.env.SESSION_SECRET || 'skinfit-cup-dev-secret-2025-stable';
-const isProduction = process.env.NODE_ENV === 'production';
-
 app.use(session({
-  secret: SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'skinfit-cup-dev-secret',
   resave: false,
   saveUninitialized: false,
-  rolling: true,
-  proxy: true,
   cookie: {
-    secure: isProduction,
+    secure: false,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: 'lax',
-    path: '/'
+    sameSite: 'lax'
   },
   name: 'skinfit.sid'
 }));
@@ -72,11 +65,12 @@ app.use(session({
 // Async initialization function
 async function startServer() {
   try {
-    // Skip cloud sync in development
-    console.log('🔧 Development mode: Using local database only');
-
+    console.log('🔄 Initializing database...');
+    
     // Initialize database (create tables if needed)
     initDatabase();
+    
+    console.log('✅ Database initialized');
 
     // Static files
     app.use('/gpx', express.static(path.join(__dirname, '..', 'public', 'gpx')));
@@ -110,14 +104,27 @@ async function startServer() {
     }
 
     // Start server
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`CORS enabled for origins: ${allowedOrigins.join(', ')}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      if (process.env.GCS_BUCKET_NAME) {
-        console.log(`☁️  Cloud Storage Bucket: ${process.env.GCS_BUCKET_NAME}`);
-      }
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
+      console.log(`🔧 Environment: ${process.env.NODE_ENV || 'development'}`);
     });
+
+    // Add error handling
+    server.on('error', (error) => {
+      console.error('❌ Server error:', error);
+    });
+
+    process.on('uncaughtException', (error) => {
+      console.error('❌ Uncaught exception:', error);
+    });
+
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('❌ Unhandled rejection at:', promise, 'reason:', reason);
+    });
+
+    console.log('🎯 Server ready for connections!');
+    
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);

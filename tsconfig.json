@@ -25,5 +25,10 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "exclude": [
+    "src/components/Sidebar.example.tsx",
+    "src/pages/GPXViewer.tsx",
+    "server/debug-server.ts"
+  ]
 }

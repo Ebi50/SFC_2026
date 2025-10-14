@@ -21,19 +21,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ selectedSeason, participan
 
   useEffect(() => {
     const checkReglement = async () => {
+      if (!selectedSeason) return;
       try {
-        const result = await reglementApi.exists();
+        const result = await reglementApi.exists(selectedSeason);
         setReglementExists(result.exists);
       } catch (error) {
         console.error('Error checking reglement:', error);
       }
     };
     checkReglement();
-  }, []);
+  }, [selectedSeason]);
 
   const handleViewReglement = () => {
-    if (reglementExists) {
-      window.open(reglementApi.getDownloadUrl(), '_blank');
+    if (reglementExists && selectedSeason) {
+      window.open(reglementApi.getDownloadUrl(selectedSeason), '_blank');
     } else {
       alert('Es wurde noch kein Reglement hochgeladen. Bitte wenden Sie sich an den Administrator.');
     }

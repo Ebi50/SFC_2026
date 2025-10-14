@@ -93,8 +93,13 @@ export const ParticipantSelectionModal: React.FC<ParticipantSelectionModalProps>
                                     <input 
                                         type="checkbox"
                                         checked={availableParticipants.length > 0 && selectedIds.size === availableParticipants.length}
-                                        onChange={handleToggleAll}
+                                        indeterminate={selectedIds.size > 0 && selectedIds.size < availableParticipants.length}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            handleToggleAll();
+                                        }}
                                         className="h-4 w-4 text-primary focus:ring-primary-dark border-gray-300 rounded"
+                                        title={selectedIds.size === availableParticipants.length ? "Alle abwählen" : "Alle auswählen"}
                                     />
                                 </th>
                                 <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider">Name</th>
@@ -104,11 +109,11 @@ export const ParticipantSelectionModal: React.FC<ParticipantSelectionModalProps>
                         <tbody className="divide-y divide-gray-200">
                            {availableParticipants.map(p => (
                                <tr key={p.id} className="hover:bg-primary/10 cursor-pointer" onClick={() => handleToggle(p.id)}>
-                                   <td className="p-3">
+                                   <td className="p-3" onClick={(e) => e.stopPropagation()}>
                                        <input
                                            type="checkbox"
                                            checked={selectedIds.has(p.id)}
-                                           onChange={e => e.stopPropagation()} // Prevent row click from toggling twice
+                                           onChange={() => handleToggle(p.id)}
                                            className="h-4 w-4 text-primary focus:ring-primary-dark border-gray-300 rounded"
                                        />
                                    </td>

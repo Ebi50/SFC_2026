@@ -1,5 +1,5 @@
 {
-  "name": "skinfit-cup-verwaltungs--&-wertungsapp",
+  "name": "skinfit-cup-verwaltungs-wertungsapp",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,9 @@
     "server": "tsx server/index.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "tsx server/index.ts"
+    "start": "tsx server/index.ts",
+    "restart": "powershell -ExecutionPolicy Bypass -File restart-servers-simple.ps1",
+    "restart-bat": "restart-servers.bat"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.2",
