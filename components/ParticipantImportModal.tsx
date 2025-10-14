@@ -143,17 +143,31 @@ export const ParticipantImportModal: React.FC<ParticipantImportModalProps> = ({ 
             perfClass = settings.defaultGroupMapping.ambitious;
         }
 
+        const firstName = row[Object.keys(mapping).find(h => mapping[h] === 'firstName') || ''] || '';
+        const lastName = row[Object.keys(mapping).find(h => mapping[h] === 'lastName') || ''] || '';
+        const email = row[emailField] || '';
+        const phone = row[Object.keys(mapping).find(h => mapping[h] === 'phone') || ''] || '';
+        const birthYear = parseInt(row[Object.keys(mapping).find(h => mapping[h] === 'birthYear') || ''], 10) || 0;
+
+        // Skip participants with missing required fields
+        if (!firstName.trim() || !lastName.trim() || !email.trim() || birthYear === 0) {
+            return null;
+        }
+
         return {
-            firstName: row[Object.keys(mapping).find(h => mapping[h] === 'firstName') || ''] || '',
-            lastName: row[Object.keys(mapping).find(h => mapping[h] === 'lastName') || ''] || '',
-            email: row[emailField] || '',
-            phone: row[Object.keys(mapping).find(h => mapping[h] === 'phone') || ''] || '',
-            birthYear: parseInt(row[Object.keys(mapping).find(h => mapping[h] === 'birthYear') || ''], 10) || 0,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            email: email.trim(),
+            phone: phone.trim() || undefined, // Use undefined instead of empty string
+            address: undefined,  // Don't include empty address fields
+            city: undefined,     // Don't include empty city fields  
+            postalCode: undefined, // Don't include empty postal code fields
+            birthYear: birthYear,
             perfClass: (Object.values(PerfClass).includes(perfClass as PerfClass) ? perfClass : PerfClass.B) as PerfClass,
             gender: (gender === 'm' || gender === 'w' ? gender : Gender.Male) as Gender,
             isRsvMember: isRsvMember,
         };
-    }).filter(p => p.email); // Must have an email
+    }).filter(p => p !== null); // Filter out null entries (invalid participants)
 
     onImport(importedParticipants);
   }, [data, mapping, onImport, settings]);

@@ -160,11 +160,11 @@ export function sanitizeParticipant(participant: any, includeAddress: boolean = 
   if (includeAddress) {
     return {
       ...basic,
-      email: participant.email,
-      phone: participant.phone,
-      address: participant.address,
-      city: participant.city,
-      postalCode: participant.postalCode
+      email: participant.email || '',
+      phone: participant.phone || '',
+      address: participant.address || '',
+      city: participant.city || '',
+      postalCode: participant.postalCode || ''
     };
   }
 

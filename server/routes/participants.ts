@@ -146,9 +146,14 @@ router.post('/import', (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
+    // Generate unique IDs for imported participants
+    const generateId = () => `p_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     const insertMany = db.transaction((participants) => {
       for (const p of participants) {
-        insert.run(p.id, p.firstName, p.lastName, p.email, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0);
+        // Generate ID if not present
+        const participantId = p.id || generateId();
+        insert.run(participantId, p.firstName, p.lastName, p.email, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0);
       }
     });
 
