@@ -28,7 +28,13 @@ steps:
       - '--max-instances'
       - '10'
       - '--set-env-vars'
-      - 'NODE_ENV=production'
+      - 'NODE_ENV=production,SESSION_SECRET=${_SESSION_SECRET},CORS_ORIGINS=${_CORS_ORIGINS}'
+      - '--port'
+      - '8080'
+
+substitutions:
+  _SESSION_SECRET: 'default-session-secret-change-me'
+  _CORS_ORIGINS: 'https://skinfit-cup-*.run.app'
 
 images:
   - 'gcr.io/$PROJECT_ID/skinfit-cup:$COMMIT_SHA'

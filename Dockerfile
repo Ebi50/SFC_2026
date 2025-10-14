@@ -1,37 +1,65 @@
-# Basis-Image
-FROM node:20-alpine
+# Multi-stage build for production optimization
+FROM node:20-alpine AS builder
 
-# Arbeitsverzeichnis erstellen
-WORKDIR /app
-
-# Build-Dependencies installieren (für better-sqlite3)
+# Install build dependencies
 RUN apk add --no-cache python3 make g++ gcc
 
-# package.json und package-lock.json kopieren
+# Set working directory
+WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
 
-# Abhängigkeiten installieren
-RUN npm ci --only=production
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
 
-# tsx separat installieren (wird für start benötigt)
-RUN npm install tsx
-
-# Restliche Anwendungsdateien kopieren
+# Copy source code
 COPY . .
 
-# Frontend bauen
+# Build the frontend
 RUN npm run build
 
-# Umgebungsvariablen setzen
+# Production stage
+FROM node:20-alpine AS production
+
+# Install runtime dependencies only
+RUN apk add --no-cache python3 make g++ gcc
+
+# Create app directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production && npm install tsx
+
+# Copy built application from builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/server ./server
+
+# Copy other necessary files
+COPY types.ts ./
+COPY services ./services
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Change ownership of the app directory
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# Environment variables
 ENV PORT=8080
 ENV NODE_ENV=production
 
-# Expose Port für Cloud Run
+# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
-  CMD node -e "require('http').get('http://localhost:8080/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/health || exit 1
 
-# Anwendung starten
+# Start the application
 CMD ["npm", "start"]
