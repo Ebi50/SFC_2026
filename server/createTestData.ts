@@ -135,8 +135,17 @@ async function createTestData() {
 
   } catch (error) {
     console.error('❌ Error creating test data:', error instanceof Error ? error.message : String(error));
-    process.exit(1);
+    throw error;
   }
 }
 
-createTestData();
+// Export the function for use in other modules
+export { createTestData };
+
+// Only run directly if this file is executed directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  createTestData().catch(error => {
+    console.error('Failed to create test data:', error);
+    process.exit(1);
+  });
+}

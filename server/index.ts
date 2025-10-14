@@ -103,6 +103,23 @@ async function startServer() {
     initDatabase();
     console.log('✅ Database initialized successfully');
 
+    // Check if database is empty and populate with test data in production
+    if (process.env.NODE_ENV === 'production') {
+      try {
+        const participantCount = db.prepare('SELECT COUNT(*) as count FROM participants').get() as { count: number };
+        if (participantCount.count === 0) {
+          console.log('📝 Database is empty, creating test data...');
+          const { createTestData } = await import('./createTestData');
+          await createTestData();
+          console.log('✅ Test data created successfully');
+        } else {
+          console.log(`📊 Database contains ${participantCount.count} participants`);
+        }
+      } catch (error) {
+        console.error('❌ Error checking/creating test data:', error);
+      }
+    }
+
     // Static files
     app.use('/gpx', express.static(path.join(__dirname, '..', 'public', 'gpx')));
     app.use('/reglement', express.static(path.join(__dirname, '..', 'public', 'reglement')));
