@@ -66,6 +66,35 @@ router.get('/:season', (req, res) => {
   }
 });
 
+// Check if reglement exists for season
+router.get('/exists/:season', (req, res) => {
+  try {
+    const season = parseInt(req.params.season);
+    const reglementData = db.prepare('SELECT * FROM reglement_files WHERE season = ?').get(season) as any;
+    
+    if (!reglementData) {
+      return res.json({ exists: false });
+    }
+
+    const filePath = path.join(REGLEMENT_DIR, reglementData.filename);
+    const fileExists = fs.existsSync(filePath);
+    
+    if (!fileExists) {
+      return res.json({ exists: false });
+    }
+
+    res.json({
+      exists: true,
+      path: `/api/reglement/${season}`,
+      uploadDate: reglementData.uploadDate,
+      size: reglementData.fileSize,
+      seasonYear: season
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Upload reglement
 router.post('/upload/:season', upload.single('reglement'), (req, res) => {
   if (!req.session?.isAdmin) {
