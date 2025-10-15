@@ -2,11 +2,11 @@ import sqlite from 'better-sqlite3';
 const Database = sqlite;
 import * as path from 'path';
 
-// Use current working directory for database in production
+// Use persistent storage path for database in production
 const dbPath = process.env.NODE_ENV === 'production' 
-  ? path.join(process.cwd(), 'database.sqlite3')
+  ? '/tmp/database.sqlite3'  // Use /tmp for Cloud Run (still ephemeral but consistent during session)
   : path.join(process.cwd(), '..', 'database.sqlite3');
-console.log('Connecting to database at:', dbPath);
+console.log('🗄️  Database path:', dbPath);
 export const db = new Database(dbPath);
 
 // Enable foreign keys for CASCADE deletes

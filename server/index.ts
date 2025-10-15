@@ -91,33 +91,45 @@ app.use(session({
 // Async initialization function
 async function startServer() {
   try {
-    // Skip cloud sync in development
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('🔧 Development mode: Using local database only');
-    } else {
-      console.log('🚀 Production mode: Initializing application');
-    }
-
-    // Initialize database (create tables if needed)
-    console.log('📊 Initializing database...');
-    initDatabase();
-    console.log('✅ Database initialized successfully');
-
-    // Check if database is empty and populate with test data in production
+    // Initialize cloud storage and database
     if (process.env.NODE_ENV === 'production') {
-      try {
-        const participantCount = db.prepare('SELECT COUNT(*) as count FROM participants').get() as { count: number };
-        if (participantCount.count === 0) {
-          console.log('📝 Database is empty, creating test data...');
-          const { createTestData } = await import('./createTestData');
-          await createTestData();
-          console.log('✅ Test data created successfully');
-        } else {
-          console.log(`📊 Database contains ${participantCount.count} participants`);
-        }
-      } catch (error) {
-        console.error('❌ Error checking/creating test data:', error);
+      console.log('� Production mode: Initializing with cloud storage');
+      
+      // Import cloud storage service
+      const { CloudStorageService } = await import('./cloudStorage');
+      
+      // Ensure bucket exists
+      await CloudStorageService.ensureBucketExists();
+      
+      // Download existing database from cloud storage
+      const dbPath = '/tmp/database.sqlite3';
+      const downloaded = await CloudStorageService.downloadDatabase(dbPath);
+      
+      // Initialize database (create tables if needed)
+      console.log('📊 Initializing database...');
+      initDatabase();
+      console.log('✅ Database initialized successfully');
+
+      // If no cloud database existed, create test data
+      if (!downloaded) {
+        console.log('📝 No cloud database found, creating initial test data...');
+        const { createTestData } = await import('./createTestData');
+        await createTestData();
+        console.log('✅ Test data created successfully');
+        
+        // Upload the new database to cloud
+        await CloudStorageService.uploadDatabase(dbPath);
       }
+      
+      // Start periodic sync to cloud storage (every 2 minutes)
+      CloudStorageService.startPeriodicSync(dbPath, 2);
+      
+    } else {
+      console.log('🔧 Development mode: Using local database only');
+      // Initialize database (create tables if needed)
+      console.log('📊 Initializing database...');
+      initDatabase();
+      console.log('✅ Database initialized successfully');
     }
 
     // Static files
@@ -136,6 +148,29 @@ async function startServer() {
     // Health check endpoint
     app.get('/api/health', (req, res) => {
       res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    });
+
+    // Manual database sync endpoint (admin only)
+    app.post('/api/sync', async (req, res) => {
+      if (!req.session?.isAdmin) {
+        return res.status(403).json({ error: 'Keine Berechtigung' });
+      }
+      
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          const { CloudStorageService } = await import('./cloudStorage');
+          const success = await CloudStorageService.syncNow('/tmp/database.sqlite3');
+          res.json({ 
+            success, 
+            message: success ? 'Database synced to cloud' : 'Sync failed',
+            timestamp: new Date().toISOString()
+          });
+        } catch (error: any) {
+          res.status(500).json({ error: error.message });
+        }
+      } else {
+        res.json({ message: 'Sync not available in development mode' });
+      }
     });
 
     // Production setup
