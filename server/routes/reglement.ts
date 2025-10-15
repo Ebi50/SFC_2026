@@ -83,18 +83,19 @@ router.post('/upload/:season', upload.single('reglement'), (req, res) => {
     
     // Save to database
     const stmt = db.prepare(`
-      INSERT OR REPLACE INTO reglement_files (id, season, filename, uploadedAt)
-      VALUES (?, ?, ?, ?)
+      INSERT OR REPLACE INTO reglement_files (id, season, filename, uploadDate, fileSize)
+      VALUES (?, ?, ?, ?, ?)
     `);
     
     const id = `reglement_${season}_${Date.now()}`;
-    stmt.run(id, season, safeName, new Date().toISOString());
+    stmt.run(id, season, safeName, new Date().toISOString(), req.file.size);
     
     res.json({
       id,
       season,
       filename: safeName,
-      uploadedAt: new Date().toISOString()
+      uploadDate: new Date().toISOString(),
+      fileSize: req.file.size
     });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
