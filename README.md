@@ -285,18 +285,39 @@ Dieses Projekt ist privat und nicht zur öffentlichen Verwendung lizenziert.
 **Ebi50**
 - GitHub: [@Ebi50](https://github.com/Ebi50)
 
+## � Production Deployment
+
+### Live Application
+- **Production URL:** https://skinfitcup-238077235347.europe-west1.run.app
+- **Custom Domain:** sfc-rsv.de (ready for setup)
+- **Google Cloud Project:** skinfit-app-474714
+
+### Deployment Commands
+```bash
+# Build and deploy latest version
+docker build -t gcr.io/skinfit-app-474714/skinfitcup:latest .
+docker push gcr.io/skinfit-app-474714/skinfitcup:latest
+gcloud run deploy skinfitcup --image gcr.io/skinfit-app-474714/skinfitcup:latest --region europe-west1 --platform managed --allow-unauthenticated --port 8080 --set-env-vars "SESSION_SECRET=mvPbJoYgut/V0nMbE6YAAuBE9DqCDzx5Bc5H4nMYrD0=,NODE_ENV=production"
+```
+
+### Data Persistence
+- **Cloud Storage:** `gs://skinfit-app-data`
+- **Auto-sync:** Every 2 minutes
+- **Manual sync:** `/api/sync` endpoint (admin only)
+- **Data survives:** Container restarts and deployments
+
 ## 🔗 Links
 
-- [Live App](https://skinfit-cup-XXXXXXX-ew.a.run.app) _(wird nach Deployment verfügbar)_
-- [GitHub Repository](https://github.com/Ebi50/SFC-CloudRun)
-- [Google Cloud Console](https://console.cloud.google.com)
+- [Live App](https://skinfitcup-238077235347.europe-west1.run.app)
+- [GitHub Repository](https://github.com/Ebi50/SFC_2026)
+- [Google Cloud Console](https://console.cloud.google.com/run?project=skinfit-app-474714)
 
 ## 📞 Support
 
 Bei Fragen oder Problemen:
-1. Erstelle ein [Issue](https://github.com/Ebi50/SFC-CloudRun/issues)
-2. Siehe [DEPLOYMENT.md](./DEPLOYMENT.md) für Troubleshooting
-3. Prüfe [Cloud Run Logs](#monitoring--logs)
+1. Erstelle ein [Issue](https://github.com/Ebi50/SFC_2026/issues)
+2. Prüfe Cloud Run Logs im Google Cloud Console
+3. Manual Database Sync via `/api/sync` (admin login required)
 
 ---
 
