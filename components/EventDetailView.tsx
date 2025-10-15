@@ -191,7 +191,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
              <table className="w-full min-w-[700px] text-left">
                 <thead className="bg-gray-100">
                     <tr>
-                        <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider">
+                        <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider w-16">
                             <button className="font-semibold" onClick={() => requestSort('rank')}>Rang{getSortArrow('rank')}</button>
                         </th>
                         <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider">
@@ -525,19 +525,19 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                         <div key={title} className="mb-8">
                             <h3 className="text-xl font-bold text-secondary mb-4">{title}</h3>
                             <div className="overflow-x-auto border rounded-lg">
-                                <table className="w-full min-w-[600px] text-left">
+                                <table className="w-full min-w-[700px] text-left">
                                     <thead className="bg-gray-100">
                                         <tr>
-                                            <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider">
+                                            <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider w-16">
                                                 <button className="font-semibold" onClick={() => requestSort('rank')}>Rang{getSortArrow('rank')}</button>
                                             </th>
                                             <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider">
                                                 <button className="font-semibold" onClick={() => requestSort('name')}>Name{getSortArrow('name')}</button>
                                             </th>
-                                            <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider">
+                                            <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider w-32 text-center">
                                                 <button className="font-semibold" onClick={() => requestSort('finisherGroup')}>Zielgruppe{getSortArrow('finisherGroup')}</button>
                                             </th>
-                                            <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider text-right">
+                                            <th className="p-3 font-semibold text-sm text-gray-600 tracking-wider w-24 text-right">
                                                 <button className="font-semibold" onClick={() => requestSort('points')}>Punkte{getSortArrow('points')}</button>
                                             </th>
                                         </tr>
@@ -562,7 +562,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="p-3">{result.finisherGroup ?? 1}</td>
+                                                <td className="p-3 text-center">{result.finisherGroup ?? 1}</td>
                                                 <td className="p-3 font-mono text-right font-bold">{result.points}</td>
                                             </tr>
                                         ))}
@@ -576,7 +576,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                                                         return participant?.perfClass ? ` (${participant.perfClass})` : '';
                                                     })()}
                                                 </td>
-                                                <td className="p-3">-</td>
+                                                <td className="p-3 text-center">-</td>
                                                 <td className="p-3 font-mono text-right font-bold">{result.points}</td>
                                             </tr>
                                         ))}
