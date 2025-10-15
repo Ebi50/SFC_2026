@@ -252,6 +252,33 @@ const App: React.FC = () => {
     return (teamMembers || []).filter(tm => teamIdsInSeason.has(tm.teamId));
   }, [teamMembers, teamsForSeason]);
 
+  // Calculate results with proper points for finished events
+  const calculatedResults = useMemo(() => {
+    const allCalculatedResults: Result[] = [];
+
+    for (const event of eventsForSeason) {
+      const eventResults = resultsForSeason.filter(r => r.eventId === event.id);
+      
+      if (event.finished && eventResults.length > 0) {
+        // Recalculate points for finished events
+        const calculatedEventResults = calculatePointsForEvent(
+          event,
+          eventResults,
+          participants,
+          teamsForSeason,
+          teamMembersForSeason,
+          settings
+        );
+        allCalculatedResults.push(...calculatedEventResults);
+      } else {
+        // Keep original results for unfinished events (with 0 points)
+        allCalculatedResults.push(...eventResults.map(r => ({ ...r, points: 0 })));
+      }
+    }
+
+    return allCalculatedResults;
+  }, [eventsForSeason, resultsForSeason, participants, teamsForSeason, teamMembersForSeason, settings]);
+
   const handleImportParticipants = async (newParticipants: Participant[]) => {
     try {
       const createdParticipants = await participantsApi.import(newParticipants);
@@ -348,9 +375,6 @@ const App: React.FC = () => {
       gender: 'M' as Gender,
       email: '',
       phone: '',
-      address: '',
-      city: '',
-      postalCode: '',
       isRsvMember: false,
     };
     setEditingParticipant(newParticipant);
@@ -494,7 +518,7 @@ const App: React.FC = () => {
         return <Standings 
           participants={participants} 
           events={eventsForSeason} 
-          results={resultsForSeason} 
+          results={calculatedResults} 
           settings={settings}
           teams={teamsForSeason}
           teamMembers={teamMembersForSeason}
@@ -513,7 +537,7 @@ const App: React.FC = () => {
           return <div>Event nicht gefunden. <button onClick={handleBackToEventsList} className="text-primary underline">Zurück zur Übersicht</button></div>;
         }
         
-        const eventResults = results.filter(r => r.eventId === selectedEventId);
+        const eventResults = calculatedResults.filter(r => r.eventId === selectedEventId);
         const eventTeams = teams.filter(t => t.eventId === selectedEventId);
         const eventTeamIds = new Set(eventTeams.map(t => t.id));
         const eventTeamMembers = teamMembers.filter(tm => eventTeamIds.has(tm.teamId));

@@ -35,9 +35,6 @@ export interface Participant {
   lastName: string;
   email?: string;
   phone?: string;
-  address?: string;
-  city?: string;
-  postalCode?: string;
   birthYear: number;
   perfClass: PerfClass;
   gender: Gender;

@@ -146,7 +146,7 @@ export function initDatabase() {
   }
 }
 
-export function sanitizeParticipant(participant: any, includeAddress: boolean = false) {
+export function sanitizeParticipant(participant: any, includeContactInfo: boolean = false) {
   const basic = {
     id: participant.id,
     firstName: participant.firstName,
@@ -157,14 +157,11 @@ export function sanitizeParticipant(participant: any, includeAddress: boolean = 
     isRsvMember: Boolean(participant.isRsvMember)
   };
 
-  if (includeAddress) {
+  if (includeContactInfo) {
     return {
       ...basic,
       email: participant.email || '',
-      phone: participant.phone || '',
-      address: participant.address || '',
-      city: participant.city || '',
-      postalCode: participant.postalCode || ''
+      phone: participant.phone || ''
     };
   }
 

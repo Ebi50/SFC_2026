@@ -72,20 +72,6 @@ export const ParticipantFormModal: React.FC<ParticipantFormModalProps> = ({ onCl
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Telefon</label>
                 <input type="tel" id="phone" name="phone" value={formData.phone || ''} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
               </div>
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700">Straße & Hausnummer</label>
-                <input type="text" id="address" name="address" value={formData.address || ''} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-1">
-                  <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">PLZ</label>
-                  <input type="text" id="postalCode" name="postalCode" value={formData.postalCode || ''} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
-                </div>
-                <div className="md:col-span-2">
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">Ort</label>
-                  <input type="text" id="city" name="city" value={formData.city || ''} onChange={handleChange} className="mt-1 p-2 border border-gray-300 rounded-md w-full" />
-                </div>
-              </div>
             </>
           )}
           

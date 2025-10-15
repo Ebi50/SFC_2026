@@ -66,7 +66,7 @@ export const ReglementView: React.FC<ReglementViewProps> = ({ selectedSeason }) 
     formData.append('seasonYear', selectedSeason.toString());
 
     try {
-      const response = await fetch('/api/reglement/upload', {
+      const response = await fetch(`/api/reglement/upload/${selectedSeason}`, {
         method: 'POST',
         credentials: 'include',
         body: formData,
