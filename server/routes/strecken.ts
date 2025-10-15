@@ -1,9 +1,10 @@
-// Strecken (GPX) Routes - Local storage only
+// Strecken (GPX) Routes - Cloud storage with local cache
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { CloudStorageService } from '../cloudStorage';
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -40,31 +41,52 @@ const upload = multer({
   }
 });
 
-// Get all GPX files
+// Get all GPX files from cloud storage
 router.get('/', async (req, res) => {
   try {
-    const files = fs.readdirSync(GPX_DIR)
-      .filter(file => file.toLowerCase().endsWith('.gpx'))
-      .map(filename => {
-        const filePath = path.join(GPX_DIR, filename);
-        const stats = fs.statSync(filePath);
-        return {
-          filename,
-          path: `/api/strecken/download/${filename}`,
-          uploadDate: stats.mtime,
-          size: stats.size
-        };
-      })
-      .sort((a, b) => b.uploadDate.getTime() - a.uploadDate.getTime());
+    // Get files from cloud storage
+    const cloudFiles = await CloudStorageService.listGpxFiles();
+    
+    // Also check local files and sync any missing from cloud
+    let localFiles: any[] = [];
+    if (fs.existsSync(GPX_DIR)) {
+      localFiles = fs.readdirSync(GPX_DIR)
+        .filter(file => file.toLowerCase().endsWith('.gpx'))
+        .map(filename => {
+          const filePath = path.join(GPX_DIR, filename);
+          const stats = fs.statSync(filePath);
+          return { filename, stats };
+        });
+    }
 
-    res.json(files);
+    // Sync local files to cloud if they're missing
+    for (const localFile of localFiles) {
+      const existsInCloud = cloudFiles.some(cf => cf.name === localFile.filename);
+      if (!existsInCloud) {
+        const localPath = path.join(GPX_DIR, localFile.filename);
+        await CloudStorageService.uploadGpxFile(localPath, localFile.filename);
+      }
+    }
+
+    // Re-fetch cloud files after sync
+    const finalFiles = await CloudStorageService.listGpxFiles();
+    
+    const formattedFiles = finalFiles.map(file => ({
+      filename: file.name,
+      path: `/api/strecken/download/${file.name}`,
+      uploadDate: new Date(file.updated),
+      size: file.size
+    })).sort((a, b) => b.uploadDate.getTime() - a.uploadDate.getTime());
+
+    res.json(formattedFiles);
   } catch (error: any) {
+    console.error('Error listing GPX files:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Upload GPX file
-router.post('/upload', upload.single('gpx'), (req, res) => {
+router.post('/upload', upload.single('gpx'), async (req, res) => {
   if (!req.session?.isAdmin) {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
@@ -77,23 +99,40 @@ router.post('/upload', upload.single('gpx'), (req, res) => {
     const originalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
     const safeName = originalName.replace(/[^a-zA-Z0-9._äöüÄÖÜß-]/g, '_');
     
+    // Upload to cloud storage
+    const localPath = req.file.path;
+    const uploadSuccess = await CloudStorageService.uploadGpxFile(localPath, safeName);
+    
+    if (!uploadSuccess) {
+      console.warn('Failed to upload to cloud storage, but file is saved locally');
+    }
+    
     res.json({
       filename: safeName,
       path: `/api/strecken/download/${safeName}`,
-      size: req.file.size
+      size: req.file.size,
+      uploadedToCloud: uploadSuccess
     });
   } catch (error: any) {
+    console.error('Error uploading GPX file:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Download GPX file
-router.get('/download/:filename', (req, res) => {
+router.get('/download/:filename', async (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(GPX_DIR, filename);
   
+  // Check if file exists locally
   if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'Datei nicht gefunden' });
+    // Try to download from cloud storage
+    console.log(`File not found locally, trying to download from cloud: ${filename}`);
+    const downloadSuccess = await CloudStorageService.downloadGpxFile(filename, filePath);
+    
+    if (!downloadSuccess) {
+      return res.status(404).json({ error: 'Datei nicht gefunden' });
+    }
   }
 
   try {
@@ -101,12 +140,13 @@ router.get('/download/:filename', (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.sendFile(filePath);
   } catch (error: any) {
+    console.error('Error serving GPX file:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
 // Delete GPX file
-router.delete('/:filename', (req, res) => {
+router.delete('/:filename', async (req, res) => {
   if (!req.session?.isAdmin) {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
@@ -114,14 +154,21 @@ router.delete('/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(GPX_DIR, filename);
   
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: 'Datei nicht gefunden' });
-  }
-
   try {
-    fs.unlinkSync(filePath);
-    res.json({ success: true });
+    // Delete from local storage if it exists
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+    
+    // Delete from cloud storage
+    const cloudDeleteSuccess = await CloudStorageService.deleteGpxFile(filename);
+    
+    res.json({ 
+      success: true, 
+      deletedFromCloud: cloudDeleteSuccess 
+    });
   } catch (error: any) {
+    console.error('Error deleting GPX file:', error);
     res.status(500).json({ error: error.message });
   }
 });

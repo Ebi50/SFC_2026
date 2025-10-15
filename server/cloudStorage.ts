@@ -104,4 +104,97 @@ export class CloudStorageService {
     console.log('🚀 Manual sync requested...');
     return await this.uploadDatabase(localPath);
   }
+
+  /**
+   * Upload GPX file to Google Cloud Storage
+   */
+  static async uploadGpxFile(localPath: string, filename: string): Promise<boolean> {
+    try {
+      if (!fs.existsSync(localPath)) {
+        console.log('⚠️  GPX file does not exist, skipping upload');
+        return false;
+      }
+
+      const cloudPath = `Daten/Strecken/${filename}`;
+      console.log(`⬆️  Uploading GPX file to: ${cloudPath}`);
+      
+      const file = bucket.file(cloudPath);
+      await file.save(fs.readFileSync(localPath), {
+        metadata: {
+          contentType: 'application/gpx+xml',
+        },
+      });
+      
+      console.log('✅ GPX file uploaded successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error uploading GPX file:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Download GPX file from Google Cloud Storage
+   */
+  static async downloadGpxFile(filename: string, localPath: string): Promise<boolean> {
+    try {
+      const cloudPath = `Daten/Strecken/${filename}`;
+      const file = bucket.file(cloudPath);
+      const [exists] = await file.exists();
+      
+      if (!exists) {
+        console.log(`📦 GPX file ${filename} not found in cloud storage`);
+        return false;
+      }
+
+      console.log(`⬇️  Downloading GPX file: ${filename}`);
+      await file.download({ destination: localPath });
+      console.log('✅ GPX file downloaded successfully');
+      return true;
+    } catch (error) {
+      console.error('❌ Error downloading GPX file:', error);
+      return false;
+    }
+  }
+
+  /**
+   * List all GPX files in cloud storage
+   */
+  static async listGpxFiles(): Promise<Array<{name: string, size: number, updated: string}>> {
+    try {
+      const [files] = await bucket.getFiles({
+        prefix: 'Daten/Strecken/',
+      });
+
+      const gpxFiles = files
+        .filter(file => file.name.toLowerCase().endsWith('.gpx'))
+        .map(file => ({
+          name: path.basename(file.name),
+          size: typeof file.metadata.size === 'string' ? parseInt(file.metadata.size) : (file.metadata.size || 0),
+          updated: file.metadata.updated || '',
+        }));
+
+      console.log(`📋 Found ${gpxFiles.length} GPX files in cloud storage`);
+      return gpxFiles;
+    } catch (error) {
+      console.error('❌ Error listing GPX files:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Delete GPX file from cloud storage
+   */
+  static async deleteGpxFile(filename: string): Promise<boolean> {
+    try {
+      const cloudPath = `Daten/Strecken/${filename}`;
+      const file = bucket.file(cloudPath);
+      await file.delete();
+      console.log(`🗑️  GPX file deleted: ${filename}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error deleting GPX file:', error);
+      return false;
+    }
+  }
 }
