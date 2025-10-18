@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+
+# Skinfit Cup - Radsport Event Management
+# Allow all search engines to crawl the site
+
+# Allow access to main pages
+Allow: /reglement
+Allow: /events
+Allow: /standings
+Allow: /strecken
+
+# Disallow admin areas and API endpoints
+Disallow: /api/
+Disallow: /admin
+
+# Allow access to static assets
+Allow: /assets/
+Allow: /images/
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.ico
+
+# Sitemap location
+Sitemap: https://sfc-rsv.de/sitemap.xml
