@@ -13,6 +13,7 @@ import reglementRouter from './routes/reglement';
 import settingsRouter from './routes/settings';
 import streckenRouter from './routes/strecken';
 import seasonsRouter from './routes/seasons';
+import homeRouter from './routes/home';
 
 // Initialize database
 import { initDatabase, db } from './database';
@@ -144,6 +145,7 @@ async function startServer() {
     app.use('/api/settings', settingsRouter);
     app.use('/api/strecken', streckenRouter);
     app.use('/api/seasons', seasonsRouter);
+    app.use('/api/home', homeRouter);
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {

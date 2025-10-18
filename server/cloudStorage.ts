@@ -197,4 +197,49 @@ export class CloudStorageService {
       return false;
     }
   }
+
+  /**
+   * Upload any file to Google Cloud Storage
+   */
+  static async uploadFile(localPath: string, cloudPath: string): Promise<boolean> {
+    try {
+      const file = bucket.file(cloudPath);
+      await file.save(fs.readFileSync(localPath));
+      console.log(`☁️  File uploaded: ${cloudPath}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error uploading file:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Download any file from Google Cloud Storage
+   */
+  static async downloadFile(cloudPath: string): Promise<Buffer> {
+    try {
+      const file = bucket.file(cloudPath);
+      const [data] = await file.download();
+      console.log(`☁️  File downloaded: ${cloudPath}`);
+      return data;
+    } catch (error) {
+      console.error('❌ Error downloading file:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete any file from Google Cloud Storage
+   */
+  static async deleteFile(cloudPath: string): Promise<boolean> {
+    try {
+      const file = bucket.file(cloudPath);
+      await file.delete();
+      console.log(`🗑️  File deleted: ${cloudPath}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Error deleting file:', error);
+      return false;
+    }
+  }
 }
