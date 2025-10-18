@@ -66,8 +66,8 @@ const initDefaultContent = async () => {
     if (!existing) {
       const defaultContent: HomeContent = {
         id: 'main',
-        title: 'Skinfit Cup 2025',
-        description: 'Herzlich willkommen zum Skinfit Cup! Hier finden Sie alle wichtigen Informationen zu unserem Radsport-Event.\n\nBesuchen Sie unsere Veranstaltungen und erleben Sie spannende Rennen in einer tollen Atmosphäre.',
+        title: 'Willkommen zum SKINFIT CUP',
+        description: 'Der skinfit-cup ist ein offenes Vereinstraining mit Punktwertung, das durch den skinfit-shop in Stuttgart unterstützt wird! Sicherheit, Spaß und Fairness stehen im Vordergrund. Jeder der mind. 18 Jahre alt ist darf teilnehmen und wird gewertet. Egal ob Hobbyfahrer, Senior, Gast oder Elite-Amateur.\n\nDer Skinfit-cup ist für ambitionierte und leistungsorientierte Radsportler. Die Strecken und der Charakter der einzelnen Trainingsfahrten wird unterschiedlich gestaltet. Neben den Events auf einer 10km Runde gibt es außerdem Einzelzeitfahren, Mannschaftszeitfahren und Bergfahren.\n\nAm Jahresende gibt es Wanderpokale und Spitzenreitertrikots für den Gesamtsieger (GELBES Trikot) und die Sieger in den Kategorien Frauen und Hobby-/Jedermann (HOBBY-CUP). Außerdem Pokale, für die Plätze 2 & 3 der jeweiligen Klassen.',
         images: [],
         uploadDate: new Date().toISOString()
       };
@@ -211,7 +211,7 @@ router.post('/upload-images', requireAuth, upload.array('images', 10), async (re
       filenames.push(file.filename);
       
       // Upload to cloud storage
-      const cloudPath = `homepage/images/${file.filename}`;
+      const cloudPath = `Bilder/${file.filename}`;
       
       try {
         await CloudStorageService.uploadFile(file.path, cloudPath);
@@ -265,7 +265,7 @@ router.get('/images/:filename', async (req, res) => {
   try {
     const filename = req.params.filename;
     const localPath = path.join(uploadsDir, filename);
-    const cloudPath = `homepage/images/${filename}`;
+    const cloudPath = `Bilder/${filename}`;
     
     // Try cloud storage first
     try {
@@ -306,7 +306,7 @@ router.delete('/images/:filename', requireAuth, async (req, res) => {
   try {
     const filename = req.params.filename;
     const localPath = path.join(uploadsDir, filename);
-    const cloudPath = `homepage/images/${filename}`;
+    const cloudPath = `Bilder/${filename}`;
     
     // Delete from cloud storage
     try {

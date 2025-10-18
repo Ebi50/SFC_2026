@@ -123,4 +123,4 @@ export interface Settings {
   };
 }
 
-export type View = 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'settings' | 'eventDetail';
+export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'settings' | 'eventDetail';
