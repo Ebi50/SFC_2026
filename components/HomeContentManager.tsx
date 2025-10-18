@@ -56,27 +56,50 @@ export const HomeContentManager: React.FC<HomeContentManagerProps> = ({ onClose 
       return;
     }
 
+    if (!content.title || !content.description) {
+      alert('Bitte füllen Sie Titel und Beschreibung aus');
+      return;
+    }
+
     setUploading(true);
     try {
+      const saveData = {
+        title: content.title,
+        description: content.description,
+        pdfFile: content.pdfFile || null,
+        images: content.images || []
+      };
+
+      console.log('Sending save data:', saveData);
+
       const response = await fetch('/api/home/content', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify(content),
+        body: JSON.stringify(saveData),
       });
+
+      const responseText = await response.text();
+      console.log('Save response:', response.status, responseText);
 
       if (response.ok) {
         alert('Inhalte erfolgreich gespeichert!');
         onClose();
       } else {
-        const error = await response.json();
-        alert(error.error || 'Fehler beim Speichern');
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || 'Unbekannter Fehler';
+        } catch {
+          errorMessage = `Server-Fehler: ${response.status}`;
+        }
+        alert(`Fehler beim Speichern: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error saving content:', error);
-      alert('Fehler beim Speichern der Inhalte');
+      alert('Netzwerk-Fehler beim Speichern der Inhalte');
     } finally {
       setUploading(false);
     }
@@ -167,23 +190,39 @@ export const HomeContentManager: React.FC<HomeContentManagerProps> = ({ onClose 
   const removeImage = async (imageFilename: string) => {
     if (!confirm('Möchten Sie dieses Bild wirklich löschen?')) return;
 
+    setUploading(true);
     try {
+      console.log('Deleting image:', imageFilename);
+      
       const response = await fetch(`/api/home/images/${imageFilename}`, {
         method: 'DELETE',
         credentials: 'include',
       });
+
+      const responseText = await response.text();
+      console.log('Delete response:', response.status, responseText);
 
       if (response.ok) {
         setContent(prev => ({
           ...prev,
           images: prev.images.filter(img => img !== imageFilename)
         }));
+        alert('Bild erfolgreich gelöscht!');
       } else {
-        alert('Fehler beim Löschen des Bildes');
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || 'Unbekannter Fehler';
+        } catch {
+          errorMessage = `Server-Fehler: ${response.status}`;
+        }
+        alert(`Fehler beim Löschen: ${errorMessage}`);
       }
     } catch (error) {
       console.error('Error deleting image:', error);
-      alert('Fehler beim Löschen des Bildes');
+      alert('Netzwerk-Fehler beim Löschen des Bildes');
+    } finally {
+      setUploading(false);
     }
   };
 

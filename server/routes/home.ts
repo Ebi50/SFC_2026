@@ -147,13 +147,24 @@ router.get('/content', (req, res) => {
 // Update home content
 router.post('/content', requireAuth, (req, res) => {
   try {
+    console.log('📝 Updating home content:', req.body);
     const { title, description, pdfFile, images } = req.body;
     
     if (!title || !description) {
+      console.log('❌ Missing title or description');
       return res.status(400).json({ error: 'Titel und Beschreibung sind erforderlich' });
     }
     
     const uploadDate = new Date().toISOString();
+    const imagesJson = JSON.stringify(images || []);
+    
+    console.log('💾 Saving to database:', {
+      title: title.substring(0, 50) + '...',
+      description: description.substring(0, 50) + '...',
+      pdfFile,
+      imagesCount: images ? images.length : 0,
+      uploadDate
+    });
     
     db.prepare(`
       INSERT OR REPLACE INTO home_content (id, title, description, pdf_file, images, upload_date) 
@@ -163,14 +174,15 @@ router.post('/content', requireAuth, (req, res) => {
       title,
       description,
       pdfFile || null,
-      JSON.stringify(images || []),
+      imagesJson,
       uploadDate
     );
     
+    console.log('✅ Home content saved successfully');
     res.json({ success: true });
   } catch (error) {
-    console.error('Error updating home content:', error);
-    res.status(500).json({ error: 'Fehler beim Speichern der Inhalte' });
+    console.error('❌ Error updating home content:', error);
+    res.status(500).json({ error: 'Fehler beim Speichern der Inhalte: ' + (error as Error).message });
   }
 });
 
@@ -305,26 +317,32 @@ router.get('/images/:filename', async (req, res) => {
 router.delete('/images/:filename', requireAuth, async (req, res) => {
   try {
     const filename = req.params.filename;
+    console.log(`🗑️  Deleting image: ${filename}`);
+    
     const localPath = path.join(uploadsDir, filename);
     const cloudPath = `Bilder/${filename}`;
     
     // Delete from cloud storage
     try {
       await CloudStorageService.deleteFile(cloudPath);
-      console.log(`Image deleted from cloud: ${cloudPath}`);
+      console.log(`✅ Image deleted from cloud: ${cloudPath}`);
     } catch (cloudError) {
-      console.warn('Cloud deletion failed:', cloudError);
+      console.warn('⚠️  Cloud deletion failed:', cloudError);
     }
     
     // Delete local file
     if (fs.existsSync(localPath)) {
       fs.unlinkSync(localPath);
+      console.log(`✅ Local file deleted: ${localPath}`);
+    } else {
+      console.log(`ℹ️  Local file not found: ${localPath}`);
     }
     
+    console.log(`✅ Image deletion completed: ${filename}`);
     res.json({ success: true });
   } catch (error) {
-    console.error('Error deleting image:', error);
-    res.status(500).json({ error: 'Fehler beim Löschen des Bildes' });
+    console.error('❌ Error deleting image:', error);
+    res.status(500).json({ error: 'Fehler beim Löschen des Bildes: ' + (error as Error).message });
   }
 });
 
