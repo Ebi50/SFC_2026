@@ -102,6 +102,15 @@ export function initDatabase() {
       fileSize INTEGER,
       FOREIGN KEY (season) REFERENCES seasons(year) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS home_content (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT NOT NULL,
+      pdf_file TEXT,
+      images TEXT DEFAULT '[]',
+      upload_date TEXT NOT NULL
+    );
   `);
 
   // Migration: Add missing columns to existing tables
