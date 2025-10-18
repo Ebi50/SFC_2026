@@ -113,8 +113,8 @@ initTable();
 
 // Authentication middleware
 const requireAuth = (req: any, res: any, next: any) => {
-  if (!req.session || !req.session.authenticated) {
-    return res.status(401).json({ error: 'Authentifizierung erforderlich' });
+  if (!req.session || !req.session.isAdmin) {
+    return res.status(401).json({ error: 'Admin-Berechtigung erforderlich' });
   }
   next();
 };
