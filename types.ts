@@ -123,4 +123,21 @@ export interface Settings {
   };
 }
 
-export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'settings' | 'eventDetail' | 'impressum';
+export interface User {
+  id: string;
+  email: string;
+  participantId: string;
+}
+
+export interface UserRegistrationData {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  birthYear: number;
+  gender: Gender;
+  perfClass: PerfClass;
+  isRsvMember: boolean;
+}
+
+export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'settings' | 'eventDetail' | 'impressum' | 'userLogin' | 'userRegister';

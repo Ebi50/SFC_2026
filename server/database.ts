@@ -121,6 +121,25 @@ export function initDatabase() {
       images TEXT DEFAULT '[]',
       upload_date TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      passwordHash TEXT NOT NULL,
+      participantId TEXT NOT NULL,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (participantId) REFERENCES participants(id)
+    );
+
+    CREATE TABLE IF NOT EXISTS event_registrations (
+      id TEXT PRIMARY KEY,
+      eventId TEXT NOT NULL,
+      participantId TEXT NOT NULL,
+      registeredAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (eventId) REFERENCES events(id) ON DELETE CASCADE,
+      FOREIGN KEY (participantId) REFERENCES participants(id) ON DELETE CASCADE,
+      UNIQUE(eventId, participantId)
+    );
   `);
 
   // Migration: Add missing columns to existing tables

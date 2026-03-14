@@ -263,4 +263,71 @@ router.post('/:id/send-email', async (req, res) => {
   }
 });
 
+// === Event Registration (User self-service) ===
+
+// POST /:id/register - Register for an event
+router.post('/:id/register', (req, res) => {
+  if (!req.session?.userId || !req.session?.participantId) {
+    return res.status(401).json({ error: 'Bitte melden Sie sich an.' });
+  }
+
+  const eventId = req.params.id;
+  const participantId = req.session.participantId;
+
+  try {
+    // Check event exists and is not finished
+    const event = db.prepare('SELECT id, finished FROM events WHERE id = ?').get(eventId) as any;
+    if (!event) {
+      return res.status(404).json({ error: 'Event nicht gefunden.' });
+    }
+    if (event.finished) {
+      return res.status(400).json({ error: 'Anmeldung für abgeschlossene Events ist nicht möglich.' });
+    }
+
+    const regId = 'reg' + Date.now() + Math.random().toString(36).substring(2, 15);
+    db.prepare('INSERT INTO event_registrations (id, eventId, participantId) VALUES (?, ?, ?)')
+      .run(regId, eventId, participantId);
+
+    res.status(201).json({ success: true });
+  } catch (error: any) {
+    // UNIQUE constraint means already registered
+    if (error.message?.includes('UNIQUE')) {
+      return res.status(409).json({ error: 'Sie sind bereits für dieses Event angemeldet.' });
+    }
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /:id/register - Unregister from an event
+router.delete('/:id/register', (req, res) => {
+  if (!req.session?.userId || !req.session?.participantId) {
+    return res.status(401).json({ error: 'Bitte melden Sie sich an.' });
+  }
+
+  try {
+    db.prepare('DELETE FROM event_registrations WHERE eventId = ? AND participantId = ?')
+      .run(req.params.id, req.session.participantId);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET /:id/registrations - List registrations for an event
+router.get('/:id/registrations', (req, res) => {
+  try {
+    const registrations = db.prepare(`
+      SELECT er.participantId, er.registeredAt, p.firstName, p.lastName, p.perfClass, p.gender
+      FROM event_registrations er
+      JOIN participants p ON p.id = er.participantId
+      WHERE er.eventId = ?
+      ORDER BY er.registeredAt ASC
+    `).all(req.params.id) as any[];
+
+    res.json({ registrations, count: registrations.length });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 export default router;

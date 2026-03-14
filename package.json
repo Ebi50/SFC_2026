@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.2",
+    "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
     "@types/multer": "^2.0.0",
+    "bcryptjs": "^3.0.3",
     "better-sqlite3": "^12.4.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

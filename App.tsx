@@ -21,14 +21,19 @@ import { StreckenView } from './components/StreckenView';
 import { HomeView } from './components/HomeView';
 import { HomeContentManager } from './components/HomeContentManager';
 import { ImpressumView } from './components/ImpressumView';
+import { UserLogin } from './components/UserLogin';
+import { UserRegister } from './components/UserRegister';
 
-const Sidebar: React.FC<{ 
-  activeView: View; 
-  setView: (view: View) => void; 
+const Sidebar: React.FC<{
+  activeView: View;
+  setView: (view: View) => void;
   isAdmin: boolean;
+  isLoggedIn: boolean;
+  userName: string | null;
+  onUserLogout: () => void;
   isMobileOpen: boolean;
   onClose: () => void;
-}> = ({ activeView, setView, isAdmin, isMobileOpen, onClose }) => {
+}> = ({ activeView, setView, isAdmin, isLoggedIn, userName, onUserLogout, isMobileOpen, onClose }) => {
   const [isAdminExpanded, setIsAdminExpanded] = React.useState(false);
   
   const allNavItems = [
@@ -112,6 +117,24 @@ const Sidebar: React.FC<{
       </nav>
       
       <div className="mt-4 pt-4 border-t border-white/20 flex-shrink-0">
+        {isLoggedIn ? (
+          <div className="bg-white/10 rounded-lg p-3 mb-3">
+            <div className="text-sm text-white/80 mb-2 text-center">{userName}</div>
+            <button
+              onClick={onUserLogout}
+              className="w-full px-3 py-2 text-sm bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
+            >
+              Abmelden
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => handleNavClick('userLogin')}
+            className="w-full px-3 py-2 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors flex items-center justify-center mb-3"
+          >
+            Anmelden / Registrieren
+          </button>
+        )}
         <button
           onClick={() => setIsAdminExpanded(!isAdminExpanded)}
           className="w-full px-3 py-2 text-sm bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors flex items-center justify-center"
@@ -131,7 +154,7 @@ const Sidebar: React.FC<{
 };
 
 const App: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, isLoggedIn, user, userLogout } = useAuth();
   const [view, setView] = useState<View>('home');
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
@@ -541,6 +564,10 @@ const App: React.FC = () => {
         />;
       case 'impressum':
         return <ImpressumView />;
+      case 'userLogin':
+        return <UserLogin onNavigate={setView} />;
+      case 'userRegister':
+        return <UserRegister onNavigate={setView} />;
       case 'eventDetail': {
         const selectedEvent = events.find(e => e.id === selectedEventId);
         if (!selectedEvent) {
@@ -571,10 +598,13 @@ const App: React.FC = () => {
   return (
     <div className="flex bg-light min-h-screen font-sans">
       <div className="no-print">
-        <Sidebar 
-          activeView={view} 
-          setView={setView} 
+        <Sidebar
+          activeView={view}
+          setView={setView}
           isAdmin={isAdmin}
+          isLoggedIn={isLoggedIn}
+          userName={user ? user.email : null}
+          onUserLogout={userLogout}
           isMobileOpen={isMobileSidebarOpen}
           onClose={() => setMobileSidebarOpen(false)}
         />

@@ -159,6 +159,38 @@ export const settingsApi = {
   }),
 };
 
+export const userApi = {
+  register: (data: any) => apiRequest('/user/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+
+  login: (email: string, password: string) => apiRequest('/user/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  }),
+
+  logout: () => apiRequest('/user/logout', { method: 'POST' }),
+
+  getStatus: () => apiRequest('/user/status'),
+
+  getProfile: () => apiRequest('/user/profile'),
+
+  getMyRegistrations: () => apiRequest('/user/registrations'),
+};
+
+export const eventRegistrationApi = {
+  register: (eventId: string) => apiRequest(`/events/${eventId}/register`, {
+    method: 'POST',
+  }),
+
+  unregister: (eventId: string) => apiRequest(`/events/${eventId}/register`, {
+    method: 'DELETE',
+  }),
+
+  getRegistrations: (eventId: string) => apiRequest(`/events/${eventId}/registrations`),
+};
+
 export const seasonsApi = {
   getAll: () => apiRequest('/seasons'),
   

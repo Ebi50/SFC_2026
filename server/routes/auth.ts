@@ -5,6 +5,8 @@ const router = express.Router();
 declare module 'express-session' {
   interface SessionData {
     isAdmin: boolean;
+    userId?: string;
+    participantId?: string;
   }
 }
 
@@ -37,7 +39,11 @@ router.post('/logout', (req, res) => {
 });
 
 router.get('/status', (req, res) => {
-  res.json({ isAdmin: req.session.isAdmin || false });
+  res.json({
+    isAdmin: req.session.isAdmin || false,
+    userId: req.session.userId || null,
+    participantId: req.session.participantId || null,
+  });
 });
 
 export default router;
