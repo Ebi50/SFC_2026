@@ -2,10 +2,20 @@ import sqlite from 'better-sqlite3';
 const Database = sqlite;
 import * as path from 'path';
 
-// Use persistent storage path for database in production
-const dbPath = process.env.NODE_ENV === 'production' 
-  ? '/tmp/database.sqlite3'  // Use /tmp for Cloud Run (still ephemeral but consistent during session)
-  : path.join(process.cwd(), '..', 'database.sqlite3');
+// Database path configuration:
+// - Railway (production): /data/database.sqlite3 (persistent volume)
+// - Cloud Run (production): /tmp/database.sqlite3 (ephemeral, needs cloud sync)
+// - Development: ../database.sqlite3 (local)
+let dbPath: string;
+
+if (process.env.NODE_ENV === 'production') {
+  // Railway uses persistent volume at /data, Cloud Run uses /tmp
+  const dataDir = process.env.RAILWAY_ENVIRONMENT ? '/data' : '/tmp';
+  dbPath = `${dataDir}/database.sqlite3`;
+} else {
+  dbPath = path.join(process.cwd(), '..', 'database.sqlite3');
+}
+
 console.log('🗄️  Database path:', dbPath);
 export const db = new Database(dbPath);
 

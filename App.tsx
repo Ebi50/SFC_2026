@@ -20,6 +20,7 @@ import { ReglementView } from './components/ReglementView';
 import { StreckenView } from './components/StreckenView';
 import { HomeView } from './components/HomeView';
 import { HomeContentManager } from './components/HomeContentManager';
+import { ImpressumView } from './components/ImpressumView';
 
 const Sidebar: React.FC<{ 
   activeView: View; 
@@ -37,6 +38,7 @@ const Sidebar: React.FC<{
     { view: 'events', label: 'Events', icon: <CalendarIcon />, requiresAdmin: false },
     { view: 'strecken', label: 'Strecken', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>, requiresAdmin: false },
     { view: 'standings', label: 'Gesamtwertung', icon: <ChartBarIcon />, requiresAdmin: false },
+    { view: 'impressum', label: 'Impressum', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, requiresAdmin: false },
     { view: 'settings', label: 'Einstellungen', icon: <CogIcon />, requiresAdmin: true },
   ] as const;
 
@@ -537,6 +539,8 @@ const App: React.FC = () => {
           participants={participants}
           events={eventsForSeason}
         />;
+      case 'impressum':
+        return <ImpressumView />;
       case 'eventDetail': {
         const selectedEvent = events.find(e => e.id === selectedEventId);
         if (!selectedEvent) {

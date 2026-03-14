@@ -1,4 +1,4 @@
-# Simple production Dockerfile for Google Cloud Run
+# Production Dockerfile for Railway / Google Cloud Run
 FROM node:20-alpine
 
 # Install dependencies for better-sqlite3
@@ -6,6 +6,9 @@ RUN apk add --no-cache python3 make g++ gcc
 
 # Set working directory
 WORKDIR /app
+
+# Create persistent data directory (Railway volume mount point)
+RUN mkdir -p /data
 
 # Copy package files
 COPY package*.json ./

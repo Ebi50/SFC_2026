@@ -27,17 +27,22 @@ dotenv.config();
 const app = express();
 const PORT = parseInt(process.env.PORT || '') || 3001;
 
+// Detect platform
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT;
+const isCloudRun = !!process.env.K_SERVICE; // Cloud Run sets K_SERVICE automatically
+
 // CORS configuration
 const allowedOrigins = [
   'http://localhost:5000',
-  'http://localhost:5001',  // Added for alternative port
+  'http://localhost:5001',
   'http://localhost:3000',
   'http://localhost:3001',
   'https://127.0.0.1:5000',
-  'https://127.0.0.1:5001',  // Added for alternative port
-  'https://skinfitcup-238077235347.europe-west1.run.app',  // Production Cloud Run URL
-  'https://sfc-rsv.de',  // Custom domain
-  'https://www.sfc-rsv.de',  // Custom domain with www
+  'https://127.0.0.1:5001',
+  'https://skinfitcup-238077235347.europe-west1.run.app',
+  'https://sfc-rsv.de',
+  'https://www.sfc-rsv.de',
+  ...(process.env.RAILWAY_PUBLIC_DOMAIN ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`] : []),
   ...(process.env.REPLIT_DOMAINS ? process.env.REPLIT_DOMAINS.split(',').map(d => `https://${d}`) : [])
 ];
 
@@ -50,9 +55,9 @@ app.use(cors({
       return callback(null, true);
     }
     
-    // For production, allow any https origin from the same domain
+    // For production, allow any https origin from known platforms
     if (process.env.NODE_ENV === 'production') {
-      if (origin.includes('run.app') || origin.includes('sfc-rsv.de')) {
+      if (origin.includes('run.app') || origin.includes('sfc-rsv.de') || origin.includes('railway.app')) {
         return callback(null, true);
       }
     }
@@ -83,7 +88,7 @@ app.use(session({
     secure: isProduction,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
-    sameSite: isProduction ? 'none' : 'lax',  // Allow cross-site cookies in production
+    sameSite: isProduction ? 'none' : 'lax',
     path: '/'
   },
   name: 'skinfit.sid'
@@ -92,42 +97,40 @@ app.use(session({
 // Async initialization function
 async function startServer() {
   try {
-    // Initialize cloud storage and database
-    if (process.env.NODE_ENV === 'production') {
-      console.log('� Production mode: Initializing with cloud storage');
+    if (isProduction && isCloudRun) {
+      // ===== Google Cloud Run: needs Cloud Storage sync =====
+      console.log('☁️  Cloud Run mode: Initializing with cloud storage');
       
-      // Import cloud storage service
       const { CloudStorageService } = await import('./cloudStorage');
-      
-      // Ensure bucket exists
       await CloudStorageService.ensureBucketExists();
       
-      // Download existing database from cloud storage
       const dbPath = '/tmp/database.sqlite3';
       const downloaded = await CloudStorageService.downloadDatabase(dbPath);
       
-      // Initialize database (create tables if needed)
       console.log('📊 Initializing database...');
       initDatabase();
       console.log('✅ Database initialized successfully');
 
-      // If no cloud database existed, create test data
       if (!downloaded) {
         console.log('📝 No cloud database found, creating initial test data...');
         const { createTestData } = await import('./createTestData');
         await createTestData();
         console.log('✅ Test data created successfully');
-        
-        // Upload the new database to cloud
         await CloudStorageService.uploadDatabase(dbPath);
       }
       
-      // Start periodic sync to cloud storage (every 2 minutes)
       CloudStorageService.startPeriodicSync(dbPath, 2);
-      
+
+    } else if (isProduction && isRailway) {
+      // ===== Railway: persistent volume, no sync needed =====
+      console.log('🚂 Railway mode: Using persistent volume at /data');
+      console.log('📊 Initializing database...');
+      initDatabase();
+      console.log('✅ Database initialized successfully');
+
     } else {
-      console.log('🔧 Development mode: Using local database only');
-      // Initialize database (create tables if needed)
+      // ===== Development =====
+      console.log('🔧 Development mode: Using local database');
       console.log('📊 Initializing database...');
       initDatabase();
       console.log('✅ Database initialized successfully');
@@ -149,16 +152,20 @@ async function startServer() {
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {
-      res.json({ status: 'ok', timestamp: new Date().toISOString() });
+      res.json({ 
+        status: 'ok', 
+        platform: isRailway ? 'railway' : isCloudRun ? 'cloudrun' : 'local',
+        timestamp: new Date().toISOString() 
+      });
     });
 
-    // Manual database sync endpoint (admin only)
+    // Manual database sync endpoint (admin only, Cloud Run only)
     app.post('/api/sync', async (req, res) => {
       if (!req.session?.isAdmin) {
         return res.status(403).json({ error: 'Keine Berechtigung' });
       }
       
-      if (process.env.NODE_ENV === 'production') {
+      if (isCloudRun) {
         try {
           const { CloudStorageService } = await import('./cloudStorage');
           const success = await CloudStorageService.syncNow('/tmp/database.sqlite3');
@@ -170,13 +177,15 @@ async function startServer() {
         } catch (error: any) {
           res.status(500).json({ error: error.message });
         }
+      } else if (isRailway) {
+        res.json({ message: 'Railway uses persistent volume – no sync needed' });
       } else {
         res.json({ message: 'Sync not available in development mode' });
       }
     });
 
-    // Production setup
-    if (process.env.NODE_ENV === 'production') {
+    // Production: serve built frontend
+    if (isProduction) {
       const distPath = path.join(__dirname, '..', 'dist');
       app.use(express.static(distPath));
       
@@ -193,9 +202,9 @@ async function startServer() {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
       console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🏗️  Platform: ${isRailway ? 'Railway' : isCloudRun ? 'Cloud Run' : 'Local'}`);
       console.log(`🔐 Session Secret configured: ${SESSION_SECRET ? 'Yes' : 'No'}`);
       
-      // Test database connection
       try {
         const testQuery = db.prepare('SELECT COUNT(*) as count FROM participants').get() as { count: number };
         console.log(`📊 Database connected: ${testQuery.count} participants found`);
@@ -206,6 +215,9 @@ async function startServer() {
       if (process.env.GCS_BUCKET_NAME) {
         console.log(`☁️  Cloud Storage Bucket: ${process.env.GCS_BUCKET_NAME}`);
       }
+      if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+        console.log(`🚂 Railway URL: https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
+      }
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error);
@@ -213,5 +225,4 @@ async function startServer() {
   }
 }
 
-// Start the server
 startServer();
