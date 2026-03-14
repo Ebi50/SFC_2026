@@ -15,6 +15,7 @@ import streckenRouter from './routes/strecken';
 import seasonsRouter from './routes/seasons';
 import homeRouter from './routes/home';
 import userAuthRouter from './routes/userAuth';
+import dataTransferRouter from './routes/dataTransfer';
 
 // Initialize database
 import { initDatabase, db } from './database';
@@ -72,7 +73,7 @@ app.use(cors({
 }));
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
 app.set('trust proxy', 1);
 
 // Session configuration
@@ -151,6 +152,7 @@ async function startServer() {
     app.use('/api/seasons', seasonsRouter);
     app.use('/api/home', homeRouter);
     app.use('/api/user', userAuthRouter);
+    app.use('/api/data', dataTransferRouter);
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {
