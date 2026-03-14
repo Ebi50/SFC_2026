@@ -5,63 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Impressum – SkinfitCup</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Playfair+Display:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap');
 
     :root {
-      --color-bg: #fafafa;
+      --color-bg: #f9fafb;
       --color-surface: #ffffff;
       --color-text: #1a1a2e;
-      --color-text-muted: #555568;
-      --color-accent: #0057a3;
-      --color-accent-light: #e8f0fa;
-      --color-border: #e0e0e8;
-      --color-divider: #d0d0dc;
-      --radius: 8px;
-      --shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      --color-text-muted: #4b5563;
+      --color-accent: #dc2626;
+      --color-accent-dark: #b91c1c;
+      --color-accent-light: #fef2f2;
+      --color-border: #e5e7eb;
+      --color-divider: #d1d5db;
+      --radius: 12px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--color-bg);
+      background: transparent;
       color: var(--color-text);
       line-height: 1.7;
       font-size: 16px;
-      padding: 2rem 1rem;
-    }
-
-    .container {
-      max-width: 780px;
-      margin: 0 auto;
-      background: var(--color-surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--color-border);
-      overflow: hidden;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #003d73 0%, #0057a3 60%, #0070cc 100%);
-      color: #fff;
-      padding: 2.5rem 2.5rem 2rem;
-    }
-
-    .header h1 {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
-
-    .header .subtitle {
-      font-size: 0.95rem;
-      opacity: 0.8;
-      font-weight: 400;
+      padding: 0;
+      margin: 0;
     }
 
     .content {
-      padding: 2rem 2.5rem 2.5rem;
+      padding: 0.5rem 0.5rem 2rem;
     }
 
     section {
@@ -73,8 +45,8 @@
     }
 
     h2 {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 1.35rem;
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 1.4rem;
       font-weight: 700;
       color: var(--color-accent);
       margin-bottom: 0.75rem;
@@ -137,23 +109,9 @@
       border-top: 1px solid var(--color-border);
       margin-top: 2rem;
     }
-
-    @media (max-width: 600px) {
-      body { padding: 1rem 0.5rem; }
-      .header { padding: 1.75rem 1.5rem 1.25rem; }
-      .header h1 { font-size: 1.6rem; }
-      .content { padding: 1.5rem; }
-    }
   </style>
 </head>
 <body>
-
-<div class="container">
-
-  <div class="header">
-    <h1>Impressum</h1>
-    <p class="subtitle">SkinfitCup – Angaben gemäß § 5 DDG</p>
-  </div>
 
   <div class="content">
 
@@ -357,7 +315,6 @@
     </div>
 
   </div>
-</div>
 
 </body>
 </html>
