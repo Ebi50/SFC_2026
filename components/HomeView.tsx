@@ -20,6 +20,20 @@ export const HomeView: React.FC<HomeViewProps> = ({ onManageContent }) => {
             </a>
           </h2>
         </header>
+
+        {/* Song Player */}
+        <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 rounded-xl p-5 mb-8 text-white shadow-lg -mx-2">
+          <div className="flex items-center gap-4">
+            <div className="text-3xl flex-shrink-0">🎵</div>
+            <div className="flex-grow">
+              <p className="font-bold text-sm uppercase tracking-wider mb-2 text-red-200">Unser Song</p>
+              <audio controls className="w-full" style={{ filter: 'invert(1) hue-rotate(180deg)', height: '36px' }}>
+                <source src="/skinfit-cup-song.mp3" type="audio/mpeg" />
+              </audio>
+            </div>
+            <div className="text-3xl flex-shrink-0">🚴</div>
+          </div>
+        </div>
         <main className="space-y-10">
           <section>
             <h3 className="text-2xl font-semibold text-red-600 mb-3">Mehr als nur ein Training – ein Erlebnis für alle Radsportbegeisterten!</h3>
