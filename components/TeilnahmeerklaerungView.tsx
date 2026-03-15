@@ -4,10 +4,7 @@ import { userApi } from '../services/api';
 
 export const TeilnahmeerklaerungView: React.FC = () => {
   const { isLoggedIn } = useAuth();
-  const [confirmed, setConfirmed] = useState(false);
   const [alreadyAccepted, setAlreadyAccepted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -18,30 +15,6 @@ export const TeilnahmeerklaerungView: React.FC = () => {
       }).catch(() => {});
     }
   }, [isLoggedIn]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!confirmed) {
-      setStatusMsg({ type: 'error', text: 'Bitte bestaetige die Teilnahmeerklaerung, um fortzufahren.' });
-      return;
-    }
-
-    if (!isLoggedIn) {
-      setStatusMsg({ type: 'success', text: 'Teilnahmeerklaerung zur Kenntnis genommen. Bitte registriere dich, um die Bestaetigung zu speichern.' });
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      await userApi.acceptWaiver();
-      setAlreadyAccepted(true);
-      setStatusMsg({ type: 'success', text: 'Teilnahmeerklaerung erfolgreich bestaetigt. Vielen Dank! Diese Erklaerung gilt fuer alle zukuenftigen Teilnahmen.' });
-    } catch {
-      setStatusMsg({ type: 'error', text: 'Fehler beim Speichern. Bitte versuche es erneut.' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -59,12 +32,6 @@ export const TeilnahmeerklaerungView: React.FC = () => {
               <strong>Hinweis:</strong> Diese Erklaerung muss nur <strong>einmalig bei der Registrierung</strong> abgegeben werden und gilt fuer alle zukuenftigen Teilnahmen am SkinfitCup.
             </p>
           </div>
-
-          {alreadyAccepted && (
-            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
-              <p className="text-green-800 font-semibold">Du hast die Teilnahmeerklaerung bereits bestaetigt.</p>
-            </div>
-          )}
 
           {/* 1. Charakter */}
           <section>
@@ -131,38 +98,22 @@ export const TeilnahmeerklaerungView: React.FC = () => {
           <section>
             <h2 className="text-xl font-display font-bold text-primary border-b-2 border-red-100 pb-2 mb-3">3. Bestaetigung</h2>
 
-            {!alreadyAccepted && (
-              <form onSubmit={handleSubmit}>
-                <label className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors ${
-                  confirmed ? 'border-green-500 bg-green-50' : 'border-primary bg-red-50'
-                }`}>
-                  <input
-                    type="checkbox"
-                    checked={confirmed}
-                    onChange={(e) => { setConfirmed(e.target.checked); setStatusMsg(null); }}
-                    className="mt-1 w-5 h-5 accent-primary"
-                  />
-                  <span className="text-gray-800 font-semibold text-sm leading-relaxed">
-                    Ich habe die oben genannten Bedingungen vollstaendig gelesen und erklaere mich mit dem Haftungsverzicht, der Teilnahme auf eigenes Risiko, dem Verzicht auf Regressansprueche gegenueber Organisator, Verein und allen anderen Teilnehmenden sowie der Eigenverantwortung einverstanden.
-                  </span>
-                </label>
+            {isLoggedIn && alreadyAccepted && (
+              <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                <p className="text-green-800 font-semibold">Du hast diese Teilnahmeerklaerung bei deiner Registrierung bestaetigt.</p>
+              </div>
+            )}
 
-                <button
-                  type="submit"
-                  disabled={!confirmed || submitting || alreadyAccepted}
-                  className="w-full mt-4 bg-primary hover:bg-primary-dark text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {submitting ? 'Wird gespeichert...' : 'Teilnahmeerklaerung bestaetigen'}
-                </button>
+            {isLoggedIn && !alreadyAccepted && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                <p className="text-yellow-800">Du hast diese Teilnahmeerklaerung noch nicht bestaetigt. Dein Konto wurde vor Einfuehrung dieser Erklaerung erstellt. Bitte wende dich an den Organisator.</p>
+              </div>
+            )}
 
-                {statusMsg && (
-                  <div className={`mt-4 p-3 rounded-lg text-center font-semibold text-sm ${
-                    statusMsg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                  }`}>
-                    {statusMsg.text}
-                  </div>
-                )}
-              </form>
+            {!isLoggedIn && (
+              <div className="bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
+                <p className="text-gray-700">Die Bestaetigung dieser Erklaerung erfolgt automatisch bei der <strong>Registrierung</strong>. Eine Registrierung ohne Zustimmung ist nicht moeglich.</p>
+              </div>
             )}
           </section>
 
