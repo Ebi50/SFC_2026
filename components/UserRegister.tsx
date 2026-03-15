@@ -250,9 +250,9 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
             <span className="text-sm text-gray-800">
               Ich habe die{' '}
               <button type="button" onClick={() => onNavigate('teilnahmeerklaerung')} className="text-primary hover:underline font-semibold">
-                Teilnahmeerklaerung & den Haftungsverzicht
+                Teilnahmeerklaerung, den Haftungsverzicht und die Bildrechte-Einwilligung
               </button>
-              {' '}gelesen und erklaere mich damit einverstanden. Ich nehme auf eigenes Risiko teil und verzichte auf Regressansprueche gegenueber Organisator, Verein und allen Teilnehmenden. *
+              {' '}gelesen und erklaere mich damit einverstanden. Ich nehme auf eigenes Risiko teil, verzichte auf Regressansprueche und stimme der Veroeffentlichung von Fotos/Videos zu. *
             </span>
           </label>
         </div>
