@@ -1,3 +1,5 @@
 [phases.setup]
 nixPkgs = ["...", "python3"]
-nodeVersion = "20"
+
+[start]
+cmd = "npm start"

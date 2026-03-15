@@ -12,6 +12,9 @@
     "restart": "powershell -ExecutionPolicy Bypass -File restart-servers-simple.ps1",
     "restart-bat": "restart-servers.bat"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
