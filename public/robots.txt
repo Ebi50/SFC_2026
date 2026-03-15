@@ -26,4 +26,4 @@ Allow: /*.gif
 Allow: /*.ico
 
 # Sitemap location
-Sitemap: https://sfc-rsv.de/sitemap.xml
+Sitemap: https://www.sfc-rsv.de/sitemap.xml
