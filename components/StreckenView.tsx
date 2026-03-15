@@ -104,7 +104,7 @@ export const StreckenView: React.FC = () => {
 
   const handleDownload = (file: GPXFile) => {
     const link = document.createElement('a');
-    link.href = file.path;
+    link.href = file.path + '?download=1';
     link.download = file.filename;
     link.click();
   };
@@ -175,10 +175,11 @@ export const StreckenView: React.FC = () => {
               {gpxFiles.map((file) => (
                 <div
                   key={file.filename}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  onClick={() => handleView(file)}
+                  className={`p-4 rounded-lg border-2 transition-all cursor-pointer ${
                     selectedGPX?.filename === file.filename
                       ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 hover:border-gray-300'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   <div className="flex items-center justify-between">

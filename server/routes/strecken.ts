@@ -137,7 +137,10 @@ router.get('/download/:filename', async (req, res) => {
 
   try {
     res.setHeader('Content-Type', 'application/gpx+xml');
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    // Only force download if explicitly requested, otherwise allow inline viewing
+    if (req.query.download === '1') {
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    }
     res.sendFile(filePath);
   } catch (error: any) {
     console.error('Error serving GPX file:', error);
