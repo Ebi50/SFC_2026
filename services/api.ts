@@ -176,6 +176,16 @@ export const userApi = {
 
   getProfile: () => apiRequest('/user/profile'),
 
+  updateProfile: (data: any) => apiRequest('/user/profile', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+
+  changePassword: (currentPassword: string, newPassword: string) => apiRequest('/user/password', {
+    method: 'PUT',
+    body: JSON.stringify({ currentPassword, newPassword }),
+  }),
+
   getMyRegistrations: () => apiRequest('/user/registrations'),
 };
 

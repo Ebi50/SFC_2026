@@ -23,6 +23,7 @@ import { HomeContentManager } from './components/HomeContentManager';
 import { ImpressumView } from './components/ImpressumView';
 import { UserLogin } from './components/UserLogin';
 import { UserRegister } from './components/UserRegister';
+import { UserProfile } from './components/UserProfile';
 
 const Sidebar: React.FC<{
   activeView: View;
@@ -120,6 +121,12 @@ const Sidebar: React.FC<{
         {isLoggedIn ? (
           <div className="bg-white/10 rounded-lg p-3 mb-3">
             <div className="text-sm text-white/80 mb-2 text-center">{userName}</div>
+            <button
+              onClick={() => handleNavClick('userProfile')}
+              className="w-full px-3 py-2 text-sm bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors mb-2"
+            >
+              Mein Profil
+            </button>
             <button
               onClick={onUserLogout}
               className="w-full px-3 py-2 text-sm bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors"
@@ -568,6 +575,8 @@ const App: React.FC = () => {
         return <UserLogin onNavigate={setView} />;
       case 'userRegister':
         return <UserRegister onNavigate={setView} />;
+      case 'userProfile':
+        return <UserProfile onBack={() => setView('home')} />;
       case 'eventDetail': {
         const selectedEvent = events.find(e => e.id === selectedEventId);
         if (!selectedEvent) {

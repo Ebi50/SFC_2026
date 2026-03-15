@@ -141,4 +141,4 @@ export interface UserRegistrationData {
   isRsvMember: boolean;
 }
 
-export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'settings' | 'eventDetail' | 'impressum' | 'userLogin' | 'userRegister';
+export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'settings' | 'eventDetail' | 'impressum' | 'userLogin' | 'userRegister' | 'userProfile';

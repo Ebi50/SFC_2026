@@ -3,7 +3,7 @@ import { Event, Participant, Result, Team, TeamMember, Settings, EventType, Grou
 import { ArrowLeftIcon, CalendarIcon, PencilIcon } from './icons';
 import { calculateHandicap, getParticipantGroup } from '../services/scoringService';
 import { useAuth } from './AuthContext';
-import { eventsApi } from '../services/api';
+import { eventsApi, eventRegistrationApi, userApi } from '../services/api';
 import { EmailEventModal } from './EmailEventModal';
 
 interface EventDetailViewProps {
@@ -47,15 +47,69 @@ const getPlacementPoints = (rank: number): number => {
 export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, participants, results, teams, teamMembers, settings, onBack, onEditTeams }) => {
     const { isAdmin } = useAuth();
     
+    const { isLoggedIn } = useAuth();
+
     const [filterStatus, setFilterStatus] = useState<'all' | 'finished' | 'dnf'>('all');
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-    
+
     const [eventNotes, setEventNotes] = useState<EventNotes>({});
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [isSavingNotes, setIsSavingNotes] = useState(false);
-    
+
     const [isEmailModalOpen, setEmailModalOpen] = useState(false);
+
+    // Registration state
+    const [isRegistered, setIsRegistered] = useState(false);
+    const [registrationCount, setRegistrationCount] = useState(0);
+    const [isRegistering, setIsRegistering] = useState(false);
+
+    // Debounce search input
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearchTerm(searchTerm), 200);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    // Load registration data
+    useEffect(() => {
+        if (!event.finished) {
+            eventRegistrationApi.getRegistrations(event.id).then(data => {
+                setRegistrationCount(data.count || 0);
+            }).catch(() => {});
+        }
+        if (isLoggedIn) {
+            userApi.getMyRegistrations().then(data => {
+                setIsRegistered(data.eventIds?.includes(event.id) || false);
+            }).catch(() => {});
+        }
+    }, [event.id, event.finished, isLoggedIn]);
+
+    const handleRegister = async () => {
+        setIsRegistering(true);
+        try {
+            await eventRegistrationApi.register(event.id);
+            setIsRegistered(true);
+            setRegistrationCount((prev: number) => prev + 1);
+        } catch (error) {
+            console.error('Registration error:', error);
+        } finally {
+            setIsRegistering(false);
+        }
+    };
+
+    const handleUnregister = async () => {
+        setIsRegistering(true);
+        try {
+            await eventRegistrationApi.unregister(event.id);
+            setIsRegistered(false);
+            setRegistrationCount((prev: number) => Math.max(0, prev - 1));
+        } catch (error) {
+            console.error('Unregistration error:', error);
+        } finally {
+            setIsRegistering(false);
+        }
+    };
 
     useEffect(() => {
         // Set default sort order based on event type when the component mounts or the event changes.
@@ -131,11 +185,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
 
     const filteredResults = useMemo(() => {
         return results.filter(result => {
-            const nameMatch = participantMatchesSearch(result.participantId, searchTerm);
+            const nameMatch = participantMatchesSearch(result.participantId, debouncedSearchTerm);
             const statusMatch = filterStatus === 'all' || (filterStatus === 'finished' && !result.dnf) || (filterStatus === 'dnf' && result.dnf);
             return nameMatch && statusMatch;
         });
-    }, [results, searchTerm, filterStatus, participantMap]);
+    }, [results, debouncedSearchTerm, filterStatus, participantMap]);
 
 
     const renderTimeTrialResults = () => {
@@ -670,6 +724,22 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                       {event.finished ? 'Abgeschlossen' : 'Anstehend'}
                     </span>
                 </span>
+                {registrationCount > 0 && (
+                    <span className="text-sm text-gray-500">{registrationCount} Anmeldung{registrationCount !== 1 ? 'en' : ''}</span>
+                )}
+                {isLoggedIn && !event.finished && (
+                    <button
+                        onClick={isRegistered ? handleUnregister : handleRegister}
+                        disabled={isRegistering}
+                        className={`px-4 py-1 text-sm font-semibold rounded-full transition-colors ${
+                            isRegistered
+                                ? 'bg-green-100 text-green-800 hover:bg-red-100 hover:text-red-800'
+                                : 'bg-primary text-white hover:bg-primary-dark'
+                        } disabled:opacity-50`}
+                    >
+                        {isRegistering ? '...' : isRegistered ? 'Angemeldet ✓' : 'Anmelden'}
+                    </button>
+                )}
             </div>
             
              {(Object.values(eventNotes).some(note => note) || isAdmin) && (

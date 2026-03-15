@@ -148,6 +148,68 @@ router.get('/profile', (req, res) => {
   res.json(participant);
 });
 
+// PUT /api/user/password
+router.put('/password', async (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'Aktuelles und neues Passwort sind erforderlich.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Das neue Passwort muss mindestens 6 Zeichen lang sein.' });
+  }
+
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId) as any;
+    if (!user) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+    }
+
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Das aktuelle Passwort ist falsch.' });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(newHash, req.session.userId);
+
+    res.json({ success: true, message: 'Passwort erfolgreich geändert.' });
+  } catch (error: any) {
+    console.error('Password change error:', error);
+    res.status(500).json({ error: 'Fehler beim Ändern des Passworts.' });
+  }
+});
+
+// PUT /api/user/profile
+router.put('/profile', (req, res) => {
+  if (!req.session.userId || !req.session.participantId) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  const { firstName, lastName, phone, birthYear, gender, perfClass, isRsvMember } = req.body;
+
+  if (!firstName || !lastName || !birthYear || !gender || !perfClass) {
+    return res.status(400).json({ error: 'Alle Pflichtfelder müssen ausgefüllt werden.' });
+  }
+
+  try {
+    db.prepare(
+      'UPDATE participants SET firstName = ?, lastName = ?, phone = ?, birthYear = ?, gender = ?, perfClass = ?, isRsvMember = ? WHERE id = ?'
+    ).run(firstName.trim(), lastName.trim(), phone?.trim() || null, birthYear, gender, perfClass, isRsvMember ? 1 : 0, req.session.participantId);
+
+    const participant = db.prepare('SELECT * FROM participants WHERE id = ?').get(req.session.participantId) as any;
+    res.json({ success: true, participant });
+  } catch (error: any) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: 'Fehler beim Aktualisieren des Profils.' });
+  }
+});
+
 // GET /api/user/registrations
 router.get('/registrations', (req, res) => {
   if (!req.session.userId || !req.session.participantId) {
