@@ -19,6 +19,7 @@ import dataTransferRouter from './routes/dataTransfer';
 
 // Initialize database
 import { initDatabase, db } from './database';
+import { SqliteSessionStore } from './sessionStore';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -81,6 +82,7 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'skinfit-cup-dev-secret-202
 const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(session({
+  store: new SqliteSessionStore(),
   secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,

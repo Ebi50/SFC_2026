@@ -167,6 +167,21 @@ export function initDatabase() {
   // Add missing column to team_members table
   addColumnIfNotExists('team_members', 'penaltyMinus2', 'BOOLEAN DEFAULT 0');
 
+  // Migration: Fix participants with NULL IDs
+  try {
+    const nullIdParticipants = db.prepare('SELECT rowid, firstName, lastName FROM participants WHERE id IS NULL').all() as Array<{rowid: number, firstName: string, lastName: string}>;
+    if (nullIdParticipants.length > 0) {
+      const updateStmt = db.prepare('UPDATE participants SET id = ? WHERE rowid = ?');
+      for (const p of nullIdParticipants) {
+        const newId = 'p' + Date.now() + Math.random().toString(36).substring(2, 10);
+        updateStmt.run(newId, p.rowid);
+      }
+      console.log(`Fixed ${nullIdParticipants.length} participants with NULL IDs`);
+    }
+  } catch (error) {
+    console.error('Error fixing participant IDs:', error);
+  }
+
   // Migration: Populate seasons table from existing events
   try {
     const existingSeasons = db.prepare('SELECT DISTINCT season FROM events').all() as Array<{season: number}>;

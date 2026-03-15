@@ -73,7 +73,8 @@ router.post('/import', (req, res) => {
           'INSERT INTO participants (id, firstName, lastName, email, phone, address, city, postalCode, birthYear, perfClass, gender, isRsvMember, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         for (const p of data.participants) {
-          stmt.run(p.id, p.firstName, p.lastName, p.email || null, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0, p.createdAt || new Date().toISOString());
+          const pid = p.id || ('p' + Date.now() + Math.random().toString(36).substring(2, 10));
+          stmt.run(pid, p.firstName, p.lastName, p.email || null, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0, p.createdAt || new Date().toISOString());
         }
       }
 
