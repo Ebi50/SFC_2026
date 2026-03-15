@@ -3,6 +3,7 @@ import { Event, Participant, Result, Team, TeamMember, EventType, Settings, Grou
 import { CloseIcon, PlusIcon, TrashIcon, UsersIcon } from './icons';
 import { ParticipantSelectionModal } from './ParticipantSelectionModal';
 import { calculateHandicap, getParticipantGroup } from '../services/scoringService';
+import { eventRegistrationApi } from '../services/api';
 
 interface EventFormModalProps {
     onClose: () => void;
@@ -206,6 +207,46 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         });
     }, [results]);
 
+
+    // Auto-add registered participants when editing an existing event
+    useEffect(() => {
+        if (!event?.id) return;
+
+        eventRegistrationApi.getRegistrations(event.id).then(data => {
+            const registrations = data.registrations || [];
+            if (registrations.length === 0) return;
+
+            setResults(currentResults => {
+                const existingIds = new Set(currentResults.map(r => r.participantId));
+                const newResults: Result[] = [];
+
+                for (const reg of registrations) {
+                    if (!existingIds.has(reg.participantId)) {
+                        const baseResult: Result = {
+                            id: generateId(),
+                            eventId: event.id,
+                            participantId: reg.participantId,
+                            dnf: false,
+                            points: 0,
+                        };
+
+                        if (formData.eventType === EventType.Handicap) {
+                            baseResult.finisherGroup = 1;
+                        } else if (formData.eventType === EventType.EZF || formData.eventType === EventType.BZF) {
+                            baseResult.timeSeconds = undefined;
+                            baseResult.hasAeroBars = false;
+                            baseResult.hasTTEquipment = false;
+                        }
+
+                        newResults.push(baseResult);
+                    }
+                }
+
+                if (newResults.length === 0) return currentResults;
+                return [...currentResults, ...newResults];
+            });
+        }).catch(() => {});
+    }, [event?.id]);
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
