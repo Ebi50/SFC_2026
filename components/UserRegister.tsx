@@ -19,6 +19,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
     gender: Gender.Male,
     perfClass: PerfClass.C,
     isRsvMember: false,
+    waiverAccepted: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -37,8 +38,13 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
     e.preventDefault();
     setError('');
 
+    if (!form.waiverAccepted) {
+      setError('Bitte bestaetige die Teilnahmeerklaerung & den Haftungsverzicht.');
+      return;
+    }
+
     if (form.password !== form.confirmPassword) {
-      setError('Die Passwörter stimmen nicht überein.');
+      setError('Die Passwoerter stimmen nicht ueberein.');
       return;
     }
 
@@ -59,6 +65,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
         gender: form.gender,
         perfClass: form.perfClass,
         isRsvMember: form.isRsvMember,
+        waiverAccepted: form.waiverAccepted,
       });
       onNavigate('events');
     } catch (err: any) {
@@ -228,6 +235,26 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
             className="w-4 h-4 text-primary rounded focus:ring-primary"
           />
           <label htmlFor="isRsvMember" className="text-sm text-gray-700">RSV-Mitglied</label>
+        </div>
+
+        {/* Teilnahmeerklaerung */}
+        <div className={`border-2 rounded-lg p-4 transition-colors ${form.waiverAccepted ? 'border-green-500 bg-green-50' : 'border-primary bg-red-50'}`}>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="waiverAccepted"
+              checked={form.waiverAccepted}
+              onChange={handleChange}
+              className="mt-1 w-5 h-5 accent-primary"
+            />
+            <span className="text-sm text-gray-800">
+              Ich habe die{' '}
+              <button type="button" onClick={() => onNavigate('teilnahmeerklaerung')} className="text-primary hover:underline font-semibold">
+                Teilnahmeerklaerung & den Haftungsverzicht
+              </button>
+              {' '}gelesen und erklaere mich damit einverstanden. Ich nehme auf eigenes Risiko teil und verzichte auf Regressansprueche gegenueber Organisator, Verein und allen Teilnehmenden. *
+            </span>
+          </label>
         </div>
 
         {error && (

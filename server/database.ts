@@ -167,6 +167,10 @@ export function initDatabase() {
   // Add missing column to team_members table
   addColumnIfNotExists('team_members', 'penaltyMinus2', 'BOOLEAN DEFAULT 0');
 
+  // Add waiver acceptance tracking to participants
+  addColumnIfNotExists('participants', 'waiverAccepted', 'BOOLEAN DEFAULT 0');
+  addColumnIfNotExists('participants', 'waiverAcceptedAt', 'DATETIME');
+
   // Migration: Fix participants with NULL IDs
   try {
     const nullIdParticipants = db.prepare('SELECT rowid, firstName, lastName FROM participants WHERE id IS NULL').all() as Array<{rowid: number, firstName: string, lastName: string}>;
@@ -214,7 +218,9 @@ export function sanitizeParticipant(participant: any, includeContactInfo: boolea
     return {
       ...basic,
       email: participant.email || '',
-      phone: participant.phone || ''
+      phone: participant.phone || '',
+      waiverAccepted: Boolean(participant.waiverAccepted),
+      waiverAcceptedAt: participant.waiverAcceptedAt || null
     };
   }
 

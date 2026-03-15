@@ -186,6 +186,8 @@ export const userApi = {
     body: JSON.stringify({ currentPassword, newPassword }),
   }),
 
+  acceptWaiver: () => apiRequest('/user/accept-waiver', { method: 'POST' }),
+
   getMyRegistrations: () => apiRequest('/user/registrations'),
 };
 

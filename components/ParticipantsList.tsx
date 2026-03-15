@@ -92,6 +92,7 @@ export const ParticipantsList: React.FC<ParticipantsListProps> = ({ participants
                 <th className="p-4 font-display font-semibold text-sm text-white uppercase tracking-wider text-center">RSV Mitglied</th>
                 {isAdmin && <th className="p-4 font-display font-semibold text-sm text-white uppercase tracking-wider">Telefon</th>}
                 {isAdmin && <th className="p-4 font-display font-semibold text-sm text-white uppercase tracking-wider">E-Mail</th>}
+                {isAdmin && <th className="p-4 font-display font-semibold text-sm text-white uppercase tracking-wider text-center">Erkl.</th>}
                 <th className="p-4 font-display font-semibold text-sm text-white uppercase tracking-wider text-right">Aktionen</th>
               </tr>
             </thead>
@@ -107,6 +108,9 @@ export const ParticipantsList: React.FC<ParticipantsListProps> = ({ participants
                   </td>
                   {isAdmin && <td className="p-4 text-gray-500">{p.phone || '-'}</td>}
                   {isAdmin && <td className="p-4 text-gray-500">{p.email || '-'}</td>}
+                  {isAdmin && <td className="p-4 text-center">
+                    {(p as any).waiverAccepted ? <CheckIcon className="w-6 h-6 text-green-600 mx-auto" /> : <span className="text-red-400">-</span>}
+                  </td>}
                   <td className="p-4 text-right">
                     <button onClick={() => onEditParticipant(p)} className="text-blue-600 hover:text-blue-800 p-2" aria-label={`Teilnehmer ${p.firstName} ${p.lastName} bearbeiten`}>
                         <PencilIcon />
@@ -121,14 +125,14 @@ export const ParticipantsList: React.FC<ParticipantsListProps> = ({ participants
               ))}
               {participants.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 8 : 6} className="p-4 text-center text-gray-500">
+                  <td colSpan={isAdmin ? 9 : 6} className="p-4 text-center text-gray-500">
                     Keine Teilnehmer vorhanden. Starten Sie mit dem Import.
                   </td>
                 </tr>
               )}
               {participants.length > 0 && filteredParticipants.length === 0 && (
                 <tr>
-                  <td colSpan={isAdmin ? 8 : 6} className="p-4 text-center text-gray-500">
+                  <td colSpan={isAdmin ? 9 : 6} className="p-4 text-center text-gray-500">
                     Keine Teilnehmer mit "{searchTerm}" gefunden.
                   </td>
                 </tr>
