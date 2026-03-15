@@ -6,7 +6,7 @@ const router = express.Router();
 
 // POST /api/user/register
 router.post('/register', async (req, res) => {
-  const { email, password, firstName, lastName, birthYear, gender, perfClass, isRsvMember } = req.body;
+  const { email, password, firstName, lastName, phone, birthYear, gender, perfClass, isRsvMember } = req.body;
 
   // Validate required fields
   if (!email || !password || !firstName || !lastName || !birthYear || !gender || !perfClass) {
@@ -42,14 +42,14 @@ router.post('/register', async (req, res) => {
 
       // Link to existing participant and update their email
       participantId = existingParticipant.id;
-      db.prepare('UPDATE participants SET email = ?, perfClass = ?, gender = ?, isRsvMember = ? WHERE id = ?')
-        .run(email.trim().toLowerCase(), perfClass, gender, isRsvMember ? 1 : 0, participantId);
+      db.prepare('UPDATE participants SET email = ?, phone = ?, perfClass = ?, gender = ?, isRsvMember = ? WHERE id = ?')
+        .run(email.trim().toLowerCase(), phone?.trim() || null, perfClass, gender, isRsvMember ? 1 : 0, participantId);
     } else {
       // Create new participant
       participantId = 'p' + Date.now() + Math.random().toString(36).substring(2, 15);
       db.prepare(
-        'INSERT INTO participants (id, firstName, lastName, email, birthYear, perfClass, gender, isRsvMember) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(participantId, firstName.trim(), lastName.trim(), email.trim().toLowerCase(), birthYear, perfClass, gender, isRsvMember ? 1 : 0);
+        'INSERT INTO participants (id, firstName, lastName, email, phone, birthYear, perfClass, gender, isRsvMember) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(participantId, firstName.trim(), lastName.trim(), email.trim().toLowerCase(), phone?.trim() || null, birthYear, perfClass, gender, isRsvMember ? 1 : 0);
     }
 
     // Hash password and create user

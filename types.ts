@@ -134,6 +134,7 @@ export interface UserRegistrationData {
   password: string;
   firstName: string;
   lastName: string;
+  phone: string;
   birthYear: number;
   gender: Gender;
   perfClass: PerfClass;

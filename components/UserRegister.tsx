@@ -12,6 +12,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     birthYear: new Date().getFullYear() - 30,
@@ -52,6 +53,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
+        phone: form.phone,
         password: form.password,
         birthYear: form.birthYear as number,
         gender: form.gender,
@@ -106,6 +108,20 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
             className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             required
             autoComplete="email"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Telefon/Mobil *</label>
+          <input
+            type="tel"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            placeholder="z.B. 0171 1234567"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            required
+            autoComplete="tel"
           />
         </div>
 
