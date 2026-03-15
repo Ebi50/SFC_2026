@@ -245,7 +245,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isAdmin]);
 
   const handleSettingsChange = async (newSettings: Settings) => {
     try {
