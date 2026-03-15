@@ -63,10 +63,20 @@ export const ParticipantImportModal: React.FC<ParticipantImportModalProps> = ({ 
         // Auto-mapping
         const newMapping: Record<string, string> = {};
         fields.forEach((header: string) => {
-          const lowerHeader = header.toLowerCase();
+          const lowerHeader = header.toLowerCase().trim();
+          // Try label-based matching first
           const foundField = ALL_MAPPABLE_FIELDS.find(f => lowerHeader.includes(f.label.toLowerCase().split(' ')[0]));
           if (foundField) {
             newMapping[header] = foundField.key;
+          } else {
+            // Try common aliases
+            const aliases: Record<string, string> = {
+              'email': 'email', 'e-mail': 'email', 'mail': 'email', 'emailadresse': 'email',
+              'telefon': 'phone', 'phone': 'phone', 'handy': 'phone', 'handynummer': 'phone', 'mobilnummer': 'phone', 'tel': 'phone',
+            };
+            if (aliases[lowerHeader]) {
+              newMapping[header] = aliases[lowerHeader];
+            }
           }
         });
         setMapping(newMapping);

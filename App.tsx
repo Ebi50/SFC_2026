@@ -310,8 +310,8 @@ const App: React.FC = () => {
 
   const handleImportParticipants = async (newParticipants: Participant[]) => {
     try {
-      const createdParticipants = await participantsApi.import(newParticipants);
-      setParticipants(prev => [...prev, ...createdParticipants]);
+      const allParticipants = await participantsApi.import(newParticipants);
+      setParticipants(allParticipants);
       setImportModalOpen(false);
     } catch (error) {
       console.error('Error importing participants:', error);

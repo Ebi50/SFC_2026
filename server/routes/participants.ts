@@ -139,25 +139,33 @@ router.post('/import', (req, res) => {
   }
 
   const participants = req.body;
-  
+
   try {
+    const findByEmail = db.prepare('SELECT id FROM participants WHERE LOWER(email) = LOWER(?)');
     const insert = db.prepare(`
-      INSERT OR REPLACE INTO participants (id, firstName, lastName, email, phone, address, city, postalCode, birthYear, perfClass, gender, isRsvMember)
+      INSERT INTO participants (id, firstName, lastName, email, phone, address, city, postalCode, birthYear, perfClass, gender, isRsvMember)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
+    const update = db.prepare(`
+      UPDATE participants SET firstName = ?, lastName = ?, email = ?, phone = ?, address = ?, city = ?, postalCode = ?, birthYear = ?, perfClass = ?, gender = ?, isRsvMember = ?
+      WHERE id = ?
+    `);
 
-    // Generate unique IDs for imported participants
     const generateId = () => `p_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    const insertMany = db.transaction((participants) => {
+    const importMany = db.transaction((participants) => {
       for (const p of participants) {
-        // Generate ID if not present
-        const participantId = p.id || generateId();
-        insert.run(participantId, p.firstName, p.lastName, p.email, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0);
+        const existing = p.email ? findByEmail.get(p.email) as any : null;
+        if (existing) {
+          update.run(p.firstName, p.lastName, p.email, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0, existing.id);
+        } else {
+          const participantId = p.id || generateId();
+          insert.run(participantId, p.firstName, p.lastName, p.email, p.phone || null, p.address || null, p.city || null, p.postalCode || null, p.birthYear, p.perfClass, p.gender, p.isRsvMember ? 1 : 0);
+        }
       }
     });
 
-    insertMany(participants);
+    importMany(participants);
     
     const allParticipants = db.prepare('SELECT * FROM participants').all();
     res.json(allParticipants.map(p => sanitizeParticipant(p, true)));
