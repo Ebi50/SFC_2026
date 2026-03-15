@@ -63,7 +63,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
     // Registration state
     const [isRegistered, setIsRegistered] = useState(false);
     const [registrationCount, setRegistrationCount] = useState(0);
+    const [registeredParticipants, setRegisteredParticipants] = useState<any[]>([]);
     const [isRegistering, setIsRegistering] = useState(false);
+
+    // Tab state
+    const [activeTab, setActiveTab] = useState<'results' | 'registrations'>('results');
 
     // Debounce search input
     useEffect(() => {
@@ -72,25 +76,28 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
     }, [searchTerm]);
 
     // Load registration data
+    const loadRegistrations = () => {
+        eventRegistrationApi.getRegistrations(event.id).then(data => {
+            setRegistrationCount(data.count || 0);
+            setRegisteredParticipants(data.registrations || []);
+        }).catch(() => {});
+    };
+
     useEffect(() => {
-        if (!event.finished) {
-            eventRegistrationApi.getRegistrations(event.id).then(data => {
-                setRegistrationCount(data.count || 0);
-            }).catch(() => {});
-        }
+        loadRegistrations();
         if (isLoggedIn) {
             userApi.getMyRegistrations().then(data => {
                 setIsRegistered(data.eventIds?.includes(event.id) || false);
             }).catch(() => {});
         }
-    }, [event.id, event.finished, isLoggedIn]);
+    }, [event.id, isLoggedIn]);
 
     const handleRegister = async () => {
         setIsRegistering(true);
         try {
             await eventRegistrationApi.register(event.id);
             setIsRegistered(true);
-            setRegistrationCount((prev: number) => prev + 1);
+            loadRegistrations();
         } catch (error) {
             console.error('Registration error:', error);
         } finally {
@@ -103,7 +110,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
         try {
             await eventRegistrationApi.unregister(event.id);
             setIsRegistered(false);
-            setRegistrationCount((prev: number) => Math.max(0, prev - 1));
+            loadRegistrations();
         } catch (error) {
             console.error('Unregistration error:', error);
         } finally {
@@ -658,27 +665,25 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
         }
     };
     
-    const FilterControls = () => (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg border flex flex-wrap items-center justify-between gap-4">
-            <div className="flex-grow min-w-[250px]">
-                <input
-                    type="text"
-                    placeholder="Teilnehmer suchen..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
-                />
-            </div>
-            <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-700">Status:</span>
-                <div className="flex rounded-md shadow-sm">
-                    <button onClick={() => setFilterStatus('all')} className={`px-4 py-2 text-sm font-medium border rounded-l-md ${filterStatus === 'all' ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>Alle</button>
-                    <button onClick={() => setFilterStatus('finished')} className={`px-4 py-2 text-sm font-medium border-t border-b ${filterStatus === 'finished' ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>Finisher</button>
-                    <button onClick={() => setFilterStatus('dnf')} className={`px-4 py-2 text-sm font-medium border rounded-r-md ${filterStatus === 'dnf' ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>DNF</button>
-                </div>
-            </div>
-        </div>
-    );
+    const perfClassLabels: Record<string, string> = { A: 'Klasse A', B: 'Klasse B', C: 'Klasse C', D: 'Klasse D' };
+    const genderLabels: Record<string, string> = { m: 'Männlich', w: 'Weiblich' };
+
+    const registrationsByClass: Record<string, any[]> = useMemo(() => {
+        const grouped: Record<string, any[]> = {};
+        for (const reg of registeredParticipants) {
+            const cls = reg.perfClass || '?';
+            if (!grouped[cls]) grouped[cls] = [];
+            grouped[cls].push(reg);
+        }
+        const sorted: Record<string, any[]> = {};
+        for (const cls of ['A', 'B', 'C', 'D']) {
+            if (grouped[cls]) sorted[cls] = grouped[cls];
+        }
+        for (const cls of Object.keys(grouped)) {
+            if (!sorted[cls]) sorted[cls] = grouped[cls];
+        }
+        return sorted;
+    }, [registeredParticipants]);
 
     return (
         <div>
@@ -811,13 +816,107 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                 </div>
             )}
             
-            <FilterControls />
-
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <div className="overflow-x-auto p-4">
-                    {renderResults()}
-                </div>
+            {/* Tabs */}
+            <div className="flex border-b mb-6">
+                <button
+                    onClick={() => setActiveTab('registrations')}
+                    className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                        activeTab === 'registrations'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                    Anmeldungen ({registrationCount})
+                </button>
+                <button
+                    onClick={() => setActiveTab('results')}
+                    className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                        activeTab === 'results'
+                            ? 'border-primary text-primary'
+                            : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                    Ergebnisse ({results.length})
+                </button>
             </div>
+
+            {activeTab === 'registrations' && (
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    {registeredParticipants.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                            Noch keine Anmeldungen für dieses Event.
+                        </div>
+                    ) : (
+                        <div className="p-4 space-y-6">
+                            {Object.entries(registrationsByClass).map(([cls, regs]) => (
+                                <div key={cls}>
+                                    <h3 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                                            {perfClassLabels[cls] || cls}
+                                        </span>
+                                        <span className="text-sm font-normal text-gray-500">{regs.length} Teilnehmer</span>
+                                    </h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="p-3 text-xs font-semibold text-gray-500 uppercase">#</th>
+                                                    <th className="p-3 text-xs font-semibold text-gray-500 uppercase">Name</th>
+                                                    <th className="p-3 text-xs font-semibold text-gray-500 uppercase">Geschlecht</th>
+                                                    <th className="p-3 text-xs font-semibold text-gray-500 uppercase">Angemeldet am</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {regs.map((reg: any, idx: number) => (
+                                                    <tr key={reg.participantId} className="hover:bg-gray-50">
+                                                        <td className="p-3 text-gray-400 text-sm">{idx + 1}</td>
+                                                        <td className="p-3 font-medium text-gray-800">{reg.lastName}, {reg.firstName}</td>
+                                                        <td className="p-3 text-gray-600">{genderLabels[reg.gender] || reg.gender}</td>
+                                                        <td className="p-3 text-gray-500 text-sm">
+                                                            {reg.registeredAt ? new Intl.DateTimeFormat('de-DE', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(reg.registeredAt)) : '-'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {activeTab === 'results' && (
+                <>
+                    {/* Search & Filter - inline to avoid re-mount */}
+                    <div className="mb-6 p-4 bg-gray-50 rounded-lg border flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex-grow min-w-[250px]">
+                            <input
+                                type="text"
+                                placeholder="Teilnehmer suchen..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
+                            />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium text-gray-700">Status:</span>
+                            <div className="flex rounded-md shadow-sm">
+                                <button onClick={() => setFilterStatus('all')} className={`px-4 py-2 text-sm font-medium border rounded-l-md ${filterStatus === 'all' ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>Alle</button>
+                                <button onClick={() => setFilterStatus('finished')} className={`px-4 py-2 text-sm font-medium border-t border-b ${filterStatus === 'finished' ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>Finisher</button>
+                                <button onClick={() => setFilterStatus('dnf')} className={`px-4 py-2 text-sm font-medium border rounded-r-md ${filterStatus === 'dnf' ? 'bg-primary text-white border-primary-dark' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>DNF</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div className="overflow-x-auto p-4">
+                            {renderResults()}
+                        </div>
+                    </div>
+                </>
+            )}
             
             {isEmailModalOpen && (
                 <EmailEventModal
