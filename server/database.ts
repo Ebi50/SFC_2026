@@ -4,14 +4,11 @@ import * as path from 'path';
 
 // Database path configuration:
 // - Railway (production): /data/database.sqlite3 (persistent volume)
-// - Cloud Run (production): /tmp/database.sqlite3 (ephemeral, needs cloud sync)
 // - Development: ../database.sqlite3 (local)
 let dbPath: string;
 
 if (process.env.NODE_ENV === 'production') {
-  // Railway uses persistent volume at /data, Cloud Run uses /tmp
-  const dataDir = process.env.RAILWAY_ENVIRONMENT ? '/data' : '/tmp';
-  dbPath = `${dataDir}/database.sqlite3`;
+  dbPath = '/data/database.sqlite3';
 } else {
   dbPath = path.join(process.cwd(), '..', 'database.sqlite3');
 }

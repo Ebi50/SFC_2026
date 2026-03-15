@@ -3,7 +3,6 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { db } from '../database';
-import { CloudStorageService } from '../cloudStorage';
 
 const router = express.Router();
 
@@ -25,7 +24,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
@@ -62,18 +61,18 @@ interface HomeContent {
 const initDefaultContent = async () => {
   try {
     const existing = db.prepare('SELECT * FROM home_content WHERE id = ?').get('main');
-    
+
     if (!existing) {
       const defaultContent: HomeContent = {
         id: 'main',
         title: 'Willkommen zum SKINFIT CUP',
-        description: 'Der skinfit-cup ist ein offenes Vereinstraining mit Punktwertung, das durch den skinfit-shop in Stuttgart unterstützt wird! Sicherheit, Spaß und Fairness stehen im Vordergrund. Jeder der mind. 18 Jahre alt ist darf teilnehmen und wird gewertet. Egal ob Hobbyfahrer, Senior, Gast oder Elite-Amateur.\n\nDer Skinfit-cup ist für ambitionierte und leistungsorientierte Radsportler. Die Strecken und der Charakter der einzelnen Trainingsfahrten wird unterschiedlich gestaltet. Neben den Events auf einer 10km Runde gibt es außerdem Einzelzeitfahren, Mannschaftszeitfahren und Bergfahren.\n\nAm Jahresende gibt es Wanderpokale und Spitzenreitertrikots für den Gesamtsieger (GELBES Trikot) und die Sieger in den Kategorien Frauen und Hobby-/Jedermann (HOBBY-CUP). Außerdem Pokale, für die Plätze 2 & 3 der jeweiligen Klassen.',
+        description: 'Der skinfit-cup ist ein offenes Vereinstraining mit Punktwertung.',
         images: [],
         uploadDate: new Date().toISOString()
       };
-      
+
       db.prepare(`
-        INSERT INTO home_content (id, title, description, pdf_file, images, upload_date) 
+        INSERT INTO home_content (id, title, description, pdf_file, images, upload_date)
         VALUES (?, ?, ?, ?, ?, ?)
       `).run(
         defaultContent.id,
@@ -108,7 +107,6 @@ const initTable = () => {
   }
 };
 
-// Initialize table on startup
 initTable();
 
 // Authentication middleware
@@ -123,11 +121,11 @@ const requireAuth = (req: any, res: any, next: any) => {
 router.get('/content', (req, res) => {
   try {
     const content = db.prepare('SELECT * FROM home_content WHERE id = ?').get('main') as any;
-    
+
     if (!content) {
       return res.status(404).json({ error: 'Inhalt nicht gefunden' });
     }
-    
+
     const result: HomeContent = {
       id: content.id,
       title: content.title,
@@ -136,7 +134,7 @@ router.get('/content', (req, res) => {
       images: JSON.parse(content.images || '[]'),
       uploadDate: content.upload_date
     };
-    
+
     res.json(result);
   } catch (error) {
     console.error('Error getting home content:', error);
@@ -147,62 +145,33 @@ router.get('/content', (req, res) => {
 // Update home content
 router.post('/content', requireAuth, (req, res) => {
   try {
-    console.log('📝 Updating home content:', req.body);
     const { title, description, pdfFile, images } = req.body;
-    
+
     if (!title || !description) {
-      console.log('❌ Missing title or description');
       return res.status(400).json({ error: 'Titel und Beschreibung sind erforderlich' });
     }
-    
+
     const uploadDate = new Date().toISOString();
     const imagesJson = JSON.stringify(images || []);
-    
-    console.log('💾 Saving to database:', {
-      title: title.substring(0, 50) + '...',
-      description: description.substring(0, 50) + '...',
-      pdfFile,
-      imagesCount: images ? images.length : 0,
-      uploadDate
-    });
-    
+
     db.prepare(`
-      INSERT OR REPLACE INTO home_content (id, title, description, pdf_file, images, upload_date) 
+      INSERT OR REPLACE INTO home_content (id, title, description, pdf_file, images, upload_date)
       VALUES (?, ?, ?, ?, ?, ?)
-    `).run(
-      'main',
-      title,
-      description,
-      pdfFile || null,
-      imagesJson,
-      uploadDate
-    );
-    
-    console.log('✅ Home content saved successfully');
+    `).run('main', title, description, pdfFile || null, imagesJson, uploadDate);
+
     res.json({ success: true });
   } catch (error) {
-    console.error('❌ Error updating home content:', error);
+    console.error('Error updating home content:', error);
     res.status(500).json({ error: 'Fehler beim Speichern der Inhalte: ' + (error as Error).message });
   }
 });
 
 // Upload PDF
-router.post('/upload-pdf', requireAuth, upload.single('pdf'), async (req, res) => {
+router.post('/upload-pdf', requireAuth, upload.single('pdf'), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'Keine PDF-Datei hochgeladen' });
     }
-    
-    // Upload to cloud storage
-    const cloudPath = `homepage/pdfs/${req.file.filename}`;
-    
-    try {
-      await CloudStorageService.uploadFile(req.file.path, cloudPath);
-      console.log(`PDF uploaded to cloud: ${cloudPath}`);
-    } catch (cloudError) {
-      console.warn('Cloud upload failed, using local storage:', cloudError);
-    }
-    
     res.json({ filename: req.file.filename });
   } catch (error) {
     console.error('Error uploading PDF:', error);
@@ -211,28 +180,13 @@ router.post('/upload-pdf', requireAuth, upload.single('pdf'), async (req, res) =
 });
 
 // Upload images
-router.post('/upload-images', requireAuth, upload.array('images', 10), async (req, res) => {
+router.post('/upload-images', requireAuth, upload.array('images', 10), (req, res) => {
   try {
     if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
       return res.status(400).json({ error: 'Keine Bilder hochgeladen' });
     }
-    
-    const filenames: string[] = [];
-    
-    for (const file of req.files) {
-      filenames.push(file.filename);
-      
-      // Upload to cloud storage
-      const cloudPath = `Bilder/${file.filename}`;
-      
-      try {
-        await CloudStorageService.uploadFile(file.path, cloudPath);
-        console.log(`Image uploaded to cloud: ${cloudPath}`);
-      } catch (cloudError) {
-        console.warn('Cloud upload failed for image, using local storage:', cloudError);
-      }
-    }
-    
+
+    const filenames = req.files.map((file: any) => file.filename);
     res.json({ filenames });
   } catch (error) {
     console.error('Error uploading images:', error);
@@ -241,108 +195,45 @@ router.post('/upload-images', requireAuth, upload.array('images', 10), async (re
 });
 
 // Serve PDF files
-router.get('/pdfs/:filename', async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const localPath = path.join(uploadsDir, filename);
-    const cloudPath = `homepage/pdfs/${filename}`;
-    
-    // Try cloud storage first
-    try {
-      const cloudData = await CloudStorageService.downloadFile(cloudPath);
-      res.set({
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${filename}"`
-      });
-      res.send(cloudData);
-      return;
-    } catch (cloudError) {
-      console.warn('Cloud download failed, trying local:', cloudError);
-    }
-    
-    // Fallback to local file
-    if (fs.existsSync(localPath)) {
-      res.sendFile(localPath);
-    } else {
-      res.status(404).json({ error: 'PDF nicht gefunden' });
-    }
-  } catch (error) {
-    console.error('Error serving PDF:', error);
-    res.status(500).json({ error: 'Fehler beim Laden der PDF' });
+router.get('/pdfs/:filename', (req, res) => {
+  const localPath = path.join(uploadsDir, req.params.filename);
+  if (fs.existsSync(localPath)) {
+    res.sendFile(localPath);
+  } else {
+    res.status(404).json({ error: 'PDF nicht gefunden' });
   }
 });
 
 // Serve image files
-router.get('/images/:filename', async (req, res) => {
-  try {
-    const filename = req.params.filename;
-    const localPath = path.join(uploadsDir, filename);
-    const cloudPath = `Bilder/${filename}`;
-    
-    // Try cloud storage first
-    try {
-      const cloudData = await CloudStorageService.downloadFile(cloudPath);
-      const ext = path.extname(filename).toLowerCase();
-      const mimeTypes: { [key: string]: string } = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif',
-        '.webp': 'image/webp'
-      };
-      
-      res.set({
-        'Content-Type': mimeTypes[ext] || 'image/jpeg',
-        'Cache-Control': 'public, max-age=86400' // Cache for 1 day
-      });
-      res.send(cloudData);
-      return;
-    } catch (cloudError) {
-      console.warn('Cloud download failed, trying local:', cloudError);
-    }
-    
-    // Fallback to local file
-    if (fs.existsSync(localPath)) {
-      res.sendFile(localPath);
-    } else {
-      res.status(404).json({ error: 'Bild nicht gefunden' });
-    }
-  } catch (error) {
-    console.error('Error serving image:', error);
-    res.status(500).json({ error: 'Fehler beim Laden des Bildes' });
+router.get('/images/:filename', (req, res) => {
+  const localPath = path.join(uploadsDir, req.params.filename);
+  if (fs.existsSync(localPath)) {
+    const ext = path.extname(req.params.filename).toLowerCase();
+    const mimeTypes: { [key: string]: string } = {
+      '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+      '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp'
+    };
+    res.set({
+      'Content-Type': mimeTypes[ext] || 'image/jpeg',
+      'Cache-Control': 'public, max-age=86400'
+    });
+    res.sendFile(localPath);
+  } else {
+    res.status(404).json({ error: 'Bild nicht gefunden' });
   }
 });
 
 // Delete image
-router.delete('/images/:filename', requireAuth, async (req, res) => {
+router.delete('/images/:filename', requireAuth, (req, res) => {
   try {
-    const filename = req.params.filename;
-    console.log(`🗑️  Deleting image: ${filename}`);
-    
-    const localPath = path.join(uploadsDir, filename);
-    const cloudPath = `Bilder/${filename}`;
-    
-    // Delete from cloud storage
-    try {
-      await CloudStorageService.deleteFile(cloudPath);
-      console.log(`✅ Image deleted from cloud: ${cloudPath}`);
-    } catch (cloudError) {
-      console.warn('⚠️  Cloud deletion failed:', cloudError);
-    }
-    
-    // Delete local file
+    const localPath = path.join(uploadsDir, req.params.filename);
     if (fs.existsSync(localPath)) {
       fs.unlinkSync(localPath);
-      console.log(`✅ Local file deleted: ${localPath}`);
-    } else {
-      console.log(`ℹ️  Local file not found: ${localPath}`);
     }
-    
-    console.log(`✅ Image deletion completed: ${filename}`);
     res.json({ success: true });
   } catch (error) {
-    console.error('❌ Error deleting image:', error);
-    res.status(500).json({ error: 'Fehler beim Löschen des Bildes: ' + (error as Error).message });
+    console.error('Error deleting image:', error);
+    res.status(500).json({ error: 'Fehler beim Löschen des Bildes' });
   }
 });
 
