@@ -7,7 +7,8 @@ import { fileURLToPath } from 'url';
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const GPX_DIR = path.join(__dirname, '../../public/gpx');
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT;
+const GPX_DIR = isRailway ? '/data/gpx' : path.join(__dirname, '../../public/gpx');
 
 // Ensure GPX directory exists
 if (!fs.existsSync(GPX_DIR)) {

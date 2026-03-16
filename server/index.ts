@@ -101,6 +101,28 @@ async function startServer() {
   try {
     if (isProduction && isRailway) {
       console.log('🚂 Railway mode: Using persistent volume at /data');
+      const fs = await import('fs');
+      // Ensure persistent directories exist
+      for (const dir of ['/data/gpx', '/data/reglement']) {
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      }
+      // Seed: copy bundled files from public/ to /data/ if /data/ is empty
+      const seedDirs = [
+        { src: path.join(__dirname, '..', 'public', 'gpx'), dest: '/data/gpx' },
+        { src: path.join(__dirname, '..', 'public', 'reglement'), dest: '/data/reglement' },
+      ];
+      for (const { src, dest } of seedDirs) {
+        if (fs.existsSync(src)) {
+          const srcFiles = fs.readdirSync(src);
+          for (const file of srcFiles) {
+            const destFile = path.join(dest, file);
+            if (!fs.existsSync(destFile)) {
+              fs.copyFileSync(path.join(src, file), destFile);
+              console.log(`📋 Seeded ${file} → ${dest}`);
+            }
+          }
+        }
+      }
     } else {
       console.log('🔧 Development mode: Using local database');
     }
@@ -109,9 +131,11 @@ async function startServer() {
     initDatabase();
     console.log('✅ Database initialized successfully');
 
-    // Static files
-    app.use('/gpx', express.static(path.join(__dirname, '..', 'public', 'gpx')));
-    app.use('/reglement', express.static(path.join(__dirname, '..', 'public', 'reglement')));
+    // Static files - use persistent volume on Railway, local public/ in dev
+    const gpxDir = isRailway ? '/data/gpx' : path.join(__dirname, '..', 'public', 'gpx');
+    const reglementDir = isRailway ? '/data/reglement' : path.join(__dirname, '..', 'public', 'reglement');
+    app.use('/gpx', express.static(gpxDir));
+    app.use('/reglement', express.static(reglementDir));
 
     // API routes
     app.use('/api/auth', authRouter);

@@ -8,7 +8,8 @@ import { db } from '../database';
 
 const router = express.Router();
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REGLEMENT_DIR = path.join(__dirname, '../../public/reglement');
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT;
+const REGLEMENT_DIR = isRailway ? '/data/reglement' : path.join(__dirname, '../../public/reglement');
 
 // Ensure reglement directory exists
 if (!fs.existsSync(REGLEMENT_DIR)) {

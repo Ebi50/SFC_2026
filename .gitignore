@@ -41,9 +41,12 @@ dist-ssr
 **/service-account-key.json
 **/credentials/*
 
-# Large files
+# Large files (except public assets needed for deployment)
 *.png
-*.pdf
-*.gpx
 *.jpg
 !public/logo.jpg
+!public/**/*.png
+!public/**/*.jpg
+
+# Uploaded content (stored in /data/ on Railway, not in git)
+uploads/
