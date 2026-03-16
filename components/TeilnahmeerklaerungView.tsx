@@ -17,7 +17,7 @@ export const TeilnahmeerklaerungView: React.FC = () => {
   }, [isLoggedIn]);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="w-full">
       <div className="bg-white rounded-2xl shadow-card overflow-hidden">
         {/* Header */}
         <div className="bg-primary text-white p-8 pb-6">
