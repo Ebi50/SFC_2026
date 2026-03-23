@@ -103,7 +103,7 @@ async function startServer() {
       console.log('🚂 Railway mode: Using persistent volume at /data');
       const fs = await import('fs');
       // Ensure persistent directories exist
-      for (const dir of ['/data/gpx', '/data/reglement']) {
+      for (const dir of ['/data/gpx', '/data/reglement', '/data/uploads/home']) {
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       }
       // Seed: copy bundled files from public/ to /data/ if /data/ is empty

@@ -7,7 +7,8 @@ import { db } from '../database';
 const router = express.Router();
 
 // Create uploads directory if it doesn't exist
-const uploadsDir = path.join(process.cwd(), 'uploads', 'home');
+const isRailway = !!process.env.RAILWAY_ENVIRONMENT;
+const uploadsDir = isRailway ? '/data/uploads/home' : path.join(process.cwd(), 'uploads', 'home');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
