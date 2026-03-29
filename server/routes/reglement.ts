@@ -110,15 +110,23 @@ router.post('/upload/:season', upload.single('reglement'), (req, res) => {
     const season = parseInt(req.params.season);
     const originalName = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
     const safeName = originalName.replace(/[^a-zA-Z0-9._äöüÄÖÜß-]/g, '_');
-    
-    // Save to database
-    const stmt = db.prepare(`
-      INSERT OR REPLACE INTO reglement_files (id, season, filename, uploadDate, fileSize)
-      VALUES (?, ?, ?, ?, ?)
-    `);
-    
+
+    // Delete old reglement file(s) for this season
+    const oldEntries = db.prepare('SELECT filename FROM reglement_files WHERE season = ?').all(season) as Array<{filename: string}>;
+    for (const entry of oldEntries) {
+      const oldPath = path.join(REGLEMENT_DIR, entry.filename);
+      if (fs.existsSync(oldPath) && entry.filename !== safeName) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+    db.prepare('DELETE FROM reglement_files WHERE season = ?').run(season);
+
+    // Save new entry to database
     const id = `reglement_${season}_${Date.now()}`;
-    stmt.run(id, season, safeName, new Date().toISOString(), req.file.size);
+    db.prepare(`
+      INSERT INTO reglement_files (id, season, filename, uploadDate, fileSize)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(id, season, safeName, new Date().toISOString(), req.file.size);
     
     res.json({
       id,
