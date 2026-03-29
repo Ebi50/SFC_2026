@@ -36,7 +36,7 @@ export const HomeView: React.FC = () => {
           </section>
           <section>
             <h3 className="text-2xl font-semibold text-red-600 mb-3">Für alle, die den Radsport lieben</h3>
-            <p className="text-base">Ob <strong>Hobbyfahrer</strong>, <strong>Senior</strong>, <strong>Gast</strong> oder <strong>Elite-Amateur</strong> – beim SKINFIT Cup ist jeder willkommen, der mindestens <strong>18 Jahre alt</strong> ist und Lust auf spannende Wettkämpfe hat. Jeder Teilnehmer wird gewertet – ganz gleich, ob du einfach Spaß haben oder dich mit Anderen messen möchtest.</p>
+            <p className="text-base">Ob <strong>Hobbyfahrer</strong>, <strong>Senior</strong>, <strong>Gast</strong> oder <strong>Elite-Amateur</strong> – beim SKINFIT Cup ist jeder willkommen, der mindestens <strong>18 Jahre alt</strong> ist und Lust auf spannende Wettkämpfe hat. Jeder Teilnehmer wird gewertet – ganz gleich, ob er einfach Spaß haben oder sich mit anderen messen möchte.</p>
           </section>
           <section>
             <h3 className="text-2xl font-semibold text-red-600 mb-3">Vielfalt & Herausforderung</h3>
