@@ -225,6 +225,55 @@ router.post('/accept-waiver', (req, res) => {
   }
 });
 
+// DELETE /api/user/account - Konto löschen (DSGVO), Ergebnisse bleiben anonymisiert
+router.delete('/account', async (req, res) => {
+  if (!req.session.userId || !req.session.participantId) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).json({ error: 'Passwort zur Bestätigung erforderlich.' });
+  }
+
+  try {
+    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId) as any;
+    if (!user) {
+      return res.status(404).json({ error: 'Benutzer nicht gefunden.' });
+    }
+
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Passwort ist falsch.' });
+    }
+
+    const participantId = req.session.participantId;
+
+    // Anonymize participant data but keep results intact
+    db.prepare(`
+      UPDATE participants
+      SET firstName = 'Gelöscht', lastName = 'Teilnehmer',
+          email = NULL, phone = NULL, address = NULL, city = NULL, postalCode = NULL
+      WHERE id = ?
+    `).run(participantId);
+
+    // Delete user account
+    db.prepare('DELETE FROM users WHERE id = ?').run(req.session.userId);
+
+    // Delete event registrations (future events)
+    db.prepare('DELETE FROM event_registrations WHERE participantId = ?').run(participantId);
+
+    // Clear session
+    req.session.userId = undefined;
+    req.session.participantId = undefined;
+
+    res.json({ success: true, message: 'Konto wurde gelöscht. Deine Ergebnisse bleiben anonymisiert erhalten.' });
+  } catch (error: any) {
+    console.error('Account deletion error:', error);
+    res.status(500).json({ error: 'Fehler beim Löschen des Kontos.' });
+  }
+});
+
 // GET /api/user/registrations
 router.get('/registrations', (req, res) => {
   if (!req.session.userId || !req.session.participantId) {

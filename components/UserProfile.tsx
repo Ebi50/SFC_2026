@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { userApi } from '../services/api';
+import { useAuth } from './AuthContext';
 import { PerfClass, Gender } from '../types';
 
 interface UserProfileProps {
@@ -7,11 +8,18 @@ interface UserProfileProps {
 }
 
 export const UserProfile: React.FC<UserProfileProps> = ({ onBack }) => {
+  const { userLogout } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  // Account deletion
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   // Profile fields
   const [firstName, setFirstName] = useState('');
@@ -94,6 +102,24 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onBack }) => {
       setPasswordError(err?.error || 'Fehler beim Ändern des Passworts.');
     } finally {
       setChangingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setDeleteError('Bitte Passwort eingeben.');
+      return;
+    }
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await userApi.deleteAccount(deletePassword);
+      await userLogout();
+      onBack();
+    } catch (err: any) {
+      setDeleteError(err?.error || 'Fehler beim Löschen des Kontos.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -260,6 +286,53 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onBack }) => {
             {changingPassword ? 'Wird geändert...' : 'Passwort ändern'}
           </button>
         </form>
+      </div>
+
+      {/* Account Deletion */}
+      <div className="bg-white rounded-2xl shadow-card p-6 mt-6 border border-red-200">
+        <h2 className="text-xl font-bold text-red-600 mb-2">Konto löschen</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Dein Konto und alle persönlichen Daten werden unwiderruflich gelöscht.
+          Deine bisherigen Ergebnisse bleiben anonymisiert in der Wertung erhalten.
+        </p>
+
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="bg-red-100 hover:bg-red-200 text-red-700 font-bold py-2 px-4 rounded-lg transition-colors"
+          >
+            Konto löschen...
+          </button>
+        ) : (
+          <div className="space-y-3 bg-red-50 p-4 rounded-lg">
+            <p className="text-sm font-semibold text-red-700">
+              Bist du sicher? Gib dein Passwort zur Bestätigung ein:
+            </p>
+            <input
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="Passwort eingeben"
+              className="w-full px-3 py-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+            />
+            {deleteError && <p className="text-red-600 text-sm">{deleteError}</p>}
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Wird gelöscht...' : 'Endgültig löschen'}
+              </button>
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeletePassword(''); setDeleteError(''); }}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-2 px-4 rounded-lg transition-colors"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -189,6 +189,11 @@ export const userApi = {
   acceptWaiver: () => apiRequest('/user/accept-waiver', { method: 'POST' }),
 
   getMyRegistrations: () => apiRequest('/user/registrations'),
+
+  deleteAccount: (password: string) => apiRequest('/user/account', {
+    method: 'DELETE',
+    body: JSON.stringify({ password }),
+  }),
 };
 
 export const eventRegistrationApi = {
