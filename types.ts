@@ -142,4 +142,4 @@ export interface UserRegistrationData {
   isRsvMember: boolean;
 }
 
-export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'impressionen' | 'settings' | 'eventDetail' | 'impressum' | 'teilnahmeerklaerung' | 'userLogin' | 'userRegister' | 'userProfile';
+export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'impressionen' | 'settings' | 'eventDetail' | 'impressum' | 'teilnahmeerklaerung' | 'userLogin' | 'userRegister' | 'userProfile' | 'forgotPassword' | 'resetPassword';

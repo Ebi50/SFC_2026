@@ -23,6 +23,8 @@ import { ImpressumView } from './components/ImpressumView';
 import { UserLogin } from './components/UserLogin';
 import { UserRegister } from './components/UserRegister';
 import { UserProfile } from './components/UserProfile';
+import { ForgotPassword } from './components/ForgotPassword';
+import { ResetPassword } from './components/ResetPassword';
 import { TeilnahmeerklaerungView } from './components/TeilnahmeerklaerungView';
 import { ImpressionenView } from './components/ImpressionenView';
 
@@ -188,7 +190,16 @@ const Sidebar: React.FC<{
 
 const App: React.FC = () => {
   const { isAdmin, isLoggedIn, user, userLogout } = useAuth();
-  const [view, setView] = useState<View>('home');
+
+  // Check for password reset token in URL
+  const [resetToken] = useState<string>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('resetToken') || '';
+  });
+  const [view, setView] = useState<View>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('resetToken') ? 'resetPassword' : 'home';
+  });
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [results, setResults] = useState<Result[]>([]);
@@ -606,6 +617,10 @@ const App: React.FC = () => {
         return <UserRegister onNavigate={setView} />;
       case 'userProfile':
         return <UserProfile onBack={() => setView('home')} />;
+      case 'forgotPassword':
+        return <ForgotPassword onNavigate={setView} />;
+      case 'resetPassword':
+        return <ResetPassword token={resetToken} onNavigate={setView} />;
       case 'eventDetail': {
         const selectedEvent = events.find(e => e.id === selectedEventId);
         if (!selectedEvent) {

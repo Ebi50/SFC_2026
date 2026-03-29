@@ -91,7 +91,16 @@ export const UserLogin: React.FC<UserLoginProps> = ({ onNavigate }) => {
         </button>
       </form>
 
-      <p className="text-center mt-6 text-gray-600">
+      <p className="text-center mt-4">
+        <button
+          onClick={() => onNavigate('forgotPassword')}
+          className="text-gray-500 hover:text-primary hover:underline text-sm"
+        >
+          Passwort vergessen?
+        </button>
+      </p>
+
+      <p className="text-center mt-4 text-gray-600">
         Noch kein Konto?{' '}
         <button
           onClick={() => onNavigate('userRegister')}

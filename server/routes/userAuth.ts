@@ -1,6 +1,8 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { db } from '../database';
+import { sendPasswordResetEmail, isEmailConfigured } from '../services/emailService';
 
 const router = express.Router();
 
@@ -110,6 +112,81 @@ router.post('/login', async (req, res) => {
   } catch (error: any) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Fehler beim Anmelden.' });
+  }
+});
+
+// POST /api/user/forgot-password
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'E-Mail-Adresse ist erforderlich.' });
+  }
+
+  if (!isEmailConfigured()) {
+    return res.status(503).json({ error: 'E-Mail-Service ist nicht konfiguriert. Bitte wende dich an den Administrator.' });
+  }
+
+  try {
+    // Always return success to prevent email enumeration
+    const user = db.prepare('SELECT u.id, p.firstName FROM users u JOIN participants p ON u.participantId = p.id WHERE u.email = ?')
+      .get(email.trim().toLowerCase()) as any;
+
+    if (user) {
+      // Invalidate old tokens for this user
+      db.prepare('UPDATE password_reset_tokens SET used = 1 WHERE userId = ? AND used = 0').run(user.id);
+
+      // Generate secure token
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+      const id = 'rt_' + Date.now() + crypto.randomBytes(4).toString('hex');
+
+      db.prepare('INSERT INTO password_reset_tokens (id, userId, token, expiresAt) VALUES (?, ?, ?, ?)')
+        .run(id, user.id, token, expiresAt);
+
+      await sendPasswordResetEmail(email.trim().toLowerCase(), token, user.firstName);
+    }
+
+    // Always respond with success (security: don't reveal if email exists)
+    res.json({ success: true, message: 'Falls ein Konto mit dieser E-Mail existiert, wurde ein Reset-Link gesendet.' });
+  } catch (error: any) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Fehler beim Senden der E-Mail.' });
+  }
+});
+
+// POST /api/user/reset-password
+router.post('/reset-password', async (req, res) => {
+  const { token, newPassword } = req.body;
+
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token und neues Passwort sind erforderlich.' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: 'Das Passwort muss mindestens 6 Zeichen lang sein.' });
+  }
+
+  try {
+    const resetToken = db.prepare(
+      'SELECT * FROM password_reset_tokens WHERE token = ? AND used = 0 AND expiresAt > ?'
+    ).get(token, new Date().toISOString()) as any;
+
+    if (!resetToken) {
+      return res.status(400).json({ error: 'Ungültiger oder abgelaufener Reset-Link. Bitte fordere einen neuen an.' });
+    }
+
+    // Hash new password and update
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    db.prepare('UPDATE users SET passwordHash = ? WHERE id = ?').run(passwordHash, resetToken.userId);
+
+    // Mark token as used
+    db.prepare('UPDATE password_reset_tokens SET used = 1 WHERE id = ?').run(resetToken.id);
+
+    res.json({ success: true, message: 'Passwort erfolgreich zurückgesetzt. Du kannst dich jetzt anmelden.' });
+  } catch (error: any) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Fehler beim Zurücksetzen des Passworts.' });
   }
 });
 

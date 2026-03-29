@@ -137,6 +137,16 @@ export function initDatabase() {
       FOREIGN KEY (participantId) REFERENCES participants(id) ON DELETE CASCADE,
       UNIQUE(eventId, participantId)
     );
+
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL,
+      token TEXT UNIQUE NOT NULL,
+      expiresAt DATETIME NOT NULL,
+      used BOOLEAN DEFAULT 0,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 
   // Migration: Add missing columns to existing tables

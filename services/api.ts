@@ -194,6 +194,16 @@ export const userApi = {
     method: 'DELETE',
     body: JSON.stringify({ password }),
   }),
+
+  forgotPassword: (email: string) => apiRequest('/user/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  }),
+
+  resetPassword: (token: string, newPassword: string) => apiRequest('/user/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, newPassword }),
+  }),
 };
 
 export const eventRegistrationApi = {
