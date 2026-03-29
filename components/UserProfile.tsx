@@ -292,8 +292,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onBack }) => {
       <div className="bg-white rounded-2xl shadow-card p-6 mt-6 border border-red-200">
         <h2 className="text-xl font-bold text-red-600 mb-2">Konto löschen</h2>
         <p className="text-sm text-gray-600 mb-4">
-          Dein Konto und alle persönlichen Daten werden unwiderruflich gelöscht.
-          Deine bisherigen Ergebnisse bleiben anonymisiert in der Wertung erhalten.
+          Dein Konto und deine Kontaktdaten (E-Mail, Telefon, Adresse) werden unwiderruflich gelöscht.
+          Dein Name und deine bisherigen Ergebnisse bleiben in der Wertung erhalten.
         </p>
 
         {!showDeleteConfirm ? (

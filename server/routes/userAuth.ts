@@ -249,11 +249,10 @@ router.delete('/account', async (req, res) => {
 
     const participantId = req.session.participantId;
 
-    // Anonymize participant data but keep results intact
+    // Delete personal contact data but keep name for results display
     db.prepare(`
       UPDATE participants
-      SET firstName = 'Gelöscht', lastName = 'Teilnehmer',
-          email = NULL, phone = NULL, address = NULL, city = NULL, postalCode = NULL
+      SET email = NULL, phone = NULL, address = NULL, city = NULL, postalCode = NULL
       WHERE id = ?
     `).run(participantId);
 
