@@ -139,6 +139,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         location: event?.location || '',
         eventType: event?.eventType || EventType.EZF,
         notes: event?.notes || '',
+        report: event?.report || '',
         finished: event?.finished || false,
     });
     
@@ -749,6 +750,10 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                     <div>
                         <label htmlFor="event-notes" className="block text-sm font-medium text-gray-700">Notizen</label>
                         <textarea id="event-notes" name="notes" value={formData.notes} onChange={handleFormChange} placeholder="Zusätzliche Informationen zum Event..." className="mt-1 p-2 border border-gray-300 rounded-md w-full h-24" />
+                    </div>
+                    <div>
+                        <label htmlFor="event-report" className="block text-sm font-medium text-gray-700">Bericht / Zusammenfassung</label>
+                        <textarea id="event-report" name="report" value={formData.report || ''} onChange={handleFormChange} placeholder="Zusammenfassung des Events für alle Teilnehmer..." className="mt-1 p-2 border border-gray-300 rounded-md w-full h-32" />
                     </div>
                     <div className="flex items-center">
                         <input type="checkbox" id="finished" name="finished" checked={formData.finished} onChange={handleFormChange} className="h-4 w-4 text-primary focus:ring-primary-dark border-gray-300 rounded" />

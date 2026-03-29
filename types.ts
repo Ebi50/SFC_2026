@@ -52,6 +52,7 @@ export interface Event {
   location: string;
   eventType: EventType;
   notes: string;
+  report?: string;
   finished: boolean;
   season: number;
 }

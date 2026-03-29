@@ -111,6 +111,8 @@ export const EventsList: React.FC<EventsListProps> = ({ events, onNewEvent, onEd
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Datum</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Typ</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Status</th>
+                <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Notizen</th>
+                <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Bericht</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider text-center">Anmeldungen</th>
                 {(isAdmin || isLoggedIn) && (
                   <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider text-right">Aktionen</th>
@@ -138,6 +140,12 @@ export const EventsList: React.FC<EventsListProps> = ({ events, onNewEvent, onEd
                       }`}>
                         {event.finished ? 'Abgeschlossen' : 'Anstehend'}
                       </span>
+                    </td>
+                    <td className="p-4 text-gray-600 text-sm max-w-[150px] truncate" title={event.notes ? (() => { try { const n = JSON.parse(event.notes); return Object.values(n).filter(Boolean).join(', '); } catch { return event.notes; } })() : ''}>
+                      {event.notes ? (() => { try { const n = JSON.parse(event.notes); const vals = Object.values(n).filter(Boolean); return vals.length > 0 ? `${vals.length} Einträge` : '—'; } catch { return event.notes.substring(0, 30); } })() : '—'}
+                    </td>
+                    <td className="p-4 text-gray-600 text-sm max-w-[150px] truncate" title={event.report || ''}>
+                      {event.report ? (event.report.length > 30 ? event.report.substring(0, 30) + '...' : event.report) : '—'}
                     </td>
                     <td className="p-4 text-center">
                       {!event.finished && count > 0 && (

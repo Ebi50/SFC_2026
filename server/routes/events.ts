@@ -81,11 +81,11 @@ router.post('/', (req, res) => {
     const newId = 'e' + Date.now() + Math.random().toString(36).substring(2, 15);
     
     const stmt = db.prepare(`
-      INSERT INTO events (id, name, date, location, eventType, notes, finished, season)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO events (id, name, date, location, eventType, notes, report, finished, season)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    
-    stmt.run(newId, event.name, event.date, event.location, event.eventType, event.notes || null, event.finished ? 1 : 0, event.season);
+
+    stmt.run(newId, event.name, event.date, event.location, event.eventType, event.notes || null, event.report || null, event.finished ? 1 : 0, event.season);
     
     console.log('✅ Event created successfully with ID:', newId);
     const createdEvent = { ...event, id: newId };
@@ -118,12 +118,12 @@ router.put('/:id', (req, res) => {
     }
 
     const stmt = db.prepare(`
-      UPDATE events 
-      SET name = ?, date = ?, location = ?, eventType = ?, notes = ?, finished = ?, season = ?
+      UPDATE events
+      SET name = ?, date = ?, location = ?, eventType = ?, notes = ?, report = ?, finished = ?, season = ?
       WHERE id = ?
     `);
-    
-    stmt.run(event.name, event.date, event.location, event.eventType, event.notes || null, event.finished ? 1 : 0, event.season, req.params.id);
+
+    stmt.run(event.name, event.date, event.location, event.eventType, event.notes || null, event.report || null, event.finished ? 1 : 0, event.season, req.params.id);
     
     res.json(event);
   } catch (error: any) {

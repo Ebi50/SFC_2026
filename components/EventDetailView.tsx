@@ -747,6 +747,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                 )}
             </div>
             
+            {event.report && (
+                <div className="mb-6 p-6 bg-blue-50 border-2 border-blue-200 rounded-xl shadow-sm">
+                    <h4 className="text-lg font-bold text-gray-800 mb-3">Bericht / Zusammenfassung</h4>
+                    <p className="text-gray-700 whitespace-pre-wrap">{event.report}</p>
+                </div>
+            )}
+
              {(Object.values(eventNotes).some(note => note) || isAdmin) && (
                 <div className="mb-6 p-6 bg-white border-2 border-gray-200 rounded-xl shadow-sm">
                     <div className="flex justify-between items-center mb-4">
