@@ -154,28 +154,33 @@ router.post('/:id/results', (req, res) => {
   
   try {
     db.prepare('DELETE FROM results WHERE eventId = ?').run(req.params.id);
-    
+
+    // Lookup current perfClass for each participant to freeze it with the result
+    const getParticipant = db.prepare('SELECT perfClass FROM participants WHERE id = ?');
+
     const insert = db.prepare(`
-      INSERT INTO results (id, eventId, participantId, placement, time, timeSeconds, points, winnerRank, dnf, hasAeroBars, hasTTEquipment, finisherGroup, rankOverall)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO results (id, eventId, participantId, placement, time, timeSeconds, points, winnerRank, dnf, hasAeroBars, hasTTEquipment, finisherGroup, rankOverall, perfClass)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertMany = db.transaction((results) => {
       for (const r of results) {
+        const participant = getParticipant.get(r.participantId) as any;
         insert.run(
-          r.id, 
-          r.eventId, 
-          r.participantId, 
-          r.placement || null, 
-          r.time || null, 
-          r.timeSeconds || null, 
-          r.points || 0, 
-          r.winnerRank || null, 
-          r.dnf ? 1 : 0, 
-          r.hasAeroBars ? 1 : 0, 
-          r.hasTTEquipment ? 1 : 0, 
-          r.finisherGroup !== undefined && r.finisherGroup !== null ? r.finisherGroup : null, 
-          r.rankOverall !== undefined && r.rankOverall !== null ? r.rankOverall : null
+          r.id,
+          r.eventId,
+          r.participantId,
+          r.placement || null,
+          r.time || null,
+          r.timeSeconds || null,
+          r.points || 0,
+          r.winnerRank || null,
+          r.dnf ? 1 : 0,
+          r.hasAeroBars ? 1 : 0,
+          r.hasTTEquipment ? 1 : 0,
+          r.finisherGroup !== undefined && r.finisherGroup !== null ? r.finisherGroup : null,
+          r.rankOverall !== undefined && r.rankOverall !== null ? r.rankOverall : null,
+          r.perfClass || participant?.perfClass || null
         );
       }
     });

@@ -68,6 +68,7 @@ export interface Result {
   points: number;
   hasAeroBars?: boolean;
   hasTTEquipment?: boolean;
+  perfClass?: PerfClass;
 }
 
 export interface Team {

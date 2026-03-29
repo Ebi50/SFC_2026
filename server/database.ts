@@ -160,6 +160,25 @@ export function initDatabase() {
   addColumnIfNotExists('results', 'hasTTEquipment', 'BOOLEAN DEFAULT 0');
   addColumnIfNotExists('results', 'finisherGroup', 'INTEGER');
   addColumnIfNotExists('results', 'rankOverall', 'INTEGER');
+  addColumnIfNotExists('results', 'perfClass', 'TEXT');
+
+  // Backfill perfClass from participants for existing results that have no perfClass
+  try {
+    const unfilled = db.prepare(
+      `SELECT r.id, p.perfClass FROM results r
+       JOIN participants p ON r.participantId = p.id
+       WHERE r.perfClass IS NULL`
+    ).all() as Array<{id: string, perfClass: string}>;
+    if (unfilled.length > 0) {
+      const updateStmt = db.prepare('UPDATE results SET perfClass = ? WHERE id = ?');
+      for (const row of unfilled) {
+        updateStmt.run(row.perfClass, row.id);
+      }
+      console.log(`Backfilled perfClass for ${unfilled.length} existing results`);
+    }
+  } catch (error) {
+    console.error('Error backfilling perfClass:', error);
+  }
 
   // Add missing column to team_members table
   addColumnIfNotExists('team_members', 'penaltyMinus2', 'BOOLEAN DEFAULT 0');

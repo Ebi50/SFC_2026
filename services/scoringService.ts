@@ -26,6 +26,9 @@ export const calculateHandicap = (participant: Participant, result: Result, even
     const age = eventYear - participant.birthYear;
     const { handicapSettings, timeTrialBonuses } = settings;
 
+    // Use frozen perfClass from result if available, otherwise fall back to participant
+    const effectiveClass = result.perfClass || participant.perfClass;
+
     // Gender (Bonus is a negative adjustment)
     if (handicapSettings.gender.female.enabled && participant.gender === Gender.Female) {
         adjustment += handicapSettings.gender.female.seconds;
@@ -40,7 +43,7 @@ export const calculateHandicap = (participant: Participant, result: Result, even
     }
 
     // Performance Class (Bonus is a negative adjustment)
-    if (handicapSettings.perfClass.hobby.enabled && [PerfClass.A, PerfClass.B].includes(participant.perfClass)) {
+    if (handicapSettings.perfClass.hobby.enabled && [PerfClass.A, PerfClass.B].includes(effectiveClass)) {
         adjustment += handicapSettings.perfClass.hobby.seconds;
     }
 
@@ -133,7 +136,8 @@ const calculateHandicapPoints = (
             continue;
         }
 
-        const basePoints = settings.handicapBasePoints[participant.perfClass] || 0;
+        const effectiveClass = result.perfClass || participant.perfClass;
+        const basePoints = settings.handicapBasePoints[effectiveClass] || 0;
         let points;
 
         if (result.finisherGroup === 2) {
@@ -279,6 +283,9 @@ export const calculateOverallStandings = (
     const standingsByParticipant: Record<string, Standing> = {};
     const finishedEventIds = new Set(events.filter(e => e.finished).map(e => e.id));
 
+    // Build a map of event dates for determining the latest perfClass
+    const eventDateMap = new Map(events.map(e => [e.id, e.date]));
+
     // Only create standings for participants who have results in finished events.
     for (const result of results) {
         if (!finishedEventIds.has(result.eventId)) {
@@ -294,16 +301,28 @@ export const calculateOverallStandings = (
         }
 
         // If we haven't seen this participant before, create their standing entry.
+        // Use the frozen perfClass from the result, fall back to participant's current class.
         if (!standingsByParticipant[participantId]) {
             standingsByParticipant[participantId] = {
                 participantId: participant.id,
                 participantName: `${participant.lastName}, ${participant.firstName}`,
-                participantClass: participant.perfClass,
+                participantClass: (result.perfClass as PerfClass) || participant.perfClass,
                 totalPoints: 0,
                 results: [],
                 finalPoints: 0,
                 tieBreakerScores: [],
             };
+        } else if (result.perfClass) {
+            // Update participantClass to the latest event's frozen class
+            const currentEventDate = eventDateMap.get(result.eventId) || '';
+            const existingResults = standingsByParticipant[participantId].results;
+            const latestExistingDate = existingResults.reduce((latest, r) => {
+                const d = eventDateMap.get(r.eventId) || '';
+                return d > latest ? d : latest;
+            }, '');
+            if (currentEventDate >= latestExistingDate) {
+                standingsByParticipant[participantId].participantClass = result.perfClass as PerfClass;
+            }
         }
 
         // Add the result to the participant's standing.
@@ -402,7 +421,9 @@ export const calculateOverallStandings = (
     finalStandings.forEach(standing => {
         const participant = participantMap.get(standing.participantId);
         if (participant) {
-            const group = getParticipantGroup(participant);
+            // Use the frozen class from standings (latest event's class) for grouping
+            const effectiveParticipant = { ...participant, perfClass: standing.participantClass };
+            const group = getParticipantGroup(effectiveParticipant);
             groupedStandings[group].push(standing);
         }
     });

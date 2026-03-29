@@ -40,8 +40,9 @@ export const HomeView: React.FC = () => {
           </section>
           <section>
             <h3 className="text-2xl font-semibold text-red-600 mb-3">Vielfalt & Herausforderung</h3>
-            <p className="text-base mb-4">Der SKINFIT Cup bietet abwechslungsreiche Trainingsrennen auf einer <strong>10-Kilometer-Runde</strong> sowie:</p>
+            <p className="text-base mb-4">Der SKINFIT Cup bietet abwechslungsreiche Trainingsrennen in den verschiedenen Disziplinen:</p>
             <ul className="list-disc pl-6 space-y-1 text-base">
+              <li><strong>Handicap</strong> – Aufholjagd für faire Chancen auf den Sieg</li>
               <li><strong>Einzelzeitfahren</strong> – Dein persönlicher Kampf gegen die Uhr</li>
               <li><strong>Mannschaftszeitfahren</strong> – Gemeinsam stark gegen den Wind</li>
               <li><strong>Bergzeitfahren</strong> – bei dem Kraft und Ausdauer zählen</li>
