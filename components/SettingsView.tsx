@@ -3,6 +3,86 @@ import { Settings, AgeHandicapRule, PerfClass, Participant, Event } from '../typ
 import { CogIcon, PlusIcon, TrashIcon, DownloadIcon } from './icons';
 import { generateProjectMarkdown } from '../services/markdownGenerator';
 
+const BulkEmailSection: React.FC = () => {
+  const [subject, setSubject] = useState('SkinfitCup – ');
+  const [message, setMessage] = useState('');
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!subject.trim() || !message.trim()) {
+      alert('Bitte Betreff und Nachricht ausfüllen');
+      return;
+    }
+    if (!confirm('E-Mail per BCC an alle Teilnehmer senden?')) return;
+
+    setSending(true);
+    try {
+      const response = await fetch('/api/admin/bulk-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, message }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      alert(`E-Mail erfolgreich an ${data.emailsSent} Teilnehmer versendet (per BCC).`);
+      setMessage('');
+    } catch (error: any) {
+      alert(`Fehler: ${error.message}`);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-lg p-6">
+      <h3 className="text-xl font-bold text-secondary mb-4 border-b pb-2">E-Mail an alle Teilnehmer</h3>
+      <p className="text-sm text-gray-500 mb-4">
+        Versende eine E-Mail per BCC an alle Teilnehmer mit hinterlegter E-Mail-Adresse.
+        Kein Empfänger kann die Adressen der anderen sehen.
+      </p>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Betreff</label>
+          <input
+            type="text"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            placeholder="Betreff der E-Mail"
+            disabled={sending}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nachricht</label>
+          <textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            rows={8}
+            placeholder="Geben Sie hier Ihre Nachricht ein..."
+            disabled={sending}
+          />
+        </div>
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p className="text-sm text-blue-800">
+            <strong>Hinweis:</strong> Am Ende wird automatisch ein Link zu www.sfc-rsv.de und das SkinfitCup-Branding eingefügt.
+          </p>
+        </div>
+        <button
+          onClick={handleSend}
+          disabled={sending || !subject.trim() || !message.trim()}
+          className="bg-primary hover:bg-primary-dark text-white font-bold py-3 px-6 rounded-lg transition-transform transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center space-x-2"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+          <span>{sending ? 'Sende...' : 'E-Mail senden'}</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 interface SettingsViewProps {
   settings: Settings;
   onSettingsChange: (newSettings: Settings) => void;
@@ -442,6 +522,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ settings, onSettings
             </p>
           </div>
         </div>
+
+        {/* Bulk Email */}
+        <BulkEmailSection />
 
       </div>
     </div>
