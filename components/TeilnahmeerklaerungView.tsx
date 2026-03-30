@@ -94,33 +94,33 @@ export const TeilnahmeerklaerungView: React.FC = () => {
 
           <hr className="border-gray-200" />
 
-          {/* 3. Bild- und Medienrechte */}
+          {/* 3. Einwilligung zur Bildnutzung (freiwillig) */}
           <section>
-            <h2 className="text-xl font-display font-bold text-primary border-b-2 border-red-100 pb-2 mb-3">3. Bild- und Medienrechte</h2>
+            <h2 className="text-xl font-display font-bold text-primary border-b-2 border-red-100 pb-2 mb-3">3. Einwilligung zur Bildnutzung (freiwillig)</h2>
+
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-4">
+              <p className="text-gray-800 text-sm">
+                <strong>Hinweis:</strong> Diese Einwilligung ist <strong>freiwillig</strong> und keine Voraussetzung fuer die Teilnahme am SkinfitCup. Du kannst auch ohne Foto-Einwilligung uneingeschraenkt teilnehmen. Die Einwilligung kann jederzeit widerrufen werden.
+              </p>
+            </div>
 
             <p className="text-gray-600 mb-3">
-              Im Rahmen des SkinfitCup-Vereinstrainings werden regelmaessig <strong>Fotos und Videos</strong> erstellt, die zur Dokumentation und Oeffentlichkeitsarbeit verwendet werden.
-            </p>
-
-            <h3 className="font-bold text-gray-800 mt-4 mb-1">Einwilligung zur Bildveroeffentlichung</h3>
-            <p className="text-gray-600 mb-3">
-              Mit meiner Teilnahme erklaere ich mich damit einverstanden, dass waehrend des Trainings angefertigte <strong>Fotos und Videoaufnahmen</strong>, auf denen ich abgebildet bin, fuer folgende Zwecke verwendet werden duerfen:
+              Waehrend der SkinfitCup-Trainingsausfahrten koennen Fotos und Videos erstellt werden, die Teilnehmende zeigen. Diese Aufnahmen werden ausschliesslich zur Dokumentation und Bewerbung des SkinfitCup verwendet und koennen auf folgenden Kanaelen veroeffentlicht werden:
             </p>
             <ul className="list-disc ml-6 text-gray-600 mb-3 space-y-1">
-              <li>Veroeffentlichung auf der SkinfitCup-Website (<a href="https://www.sfc-rsv.de" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.sfc-rsv.de</a>), insbesondere im Bereich &bdquo;Impressionen&ldquo;</li>
-              <li>Darstellung in sozialen Medien (z.&thinsp;B. Instagram, Facebook) des Organisators oder des RSV Stuttgart-Vaihingen e.&thinsp;V.</li>
-              <li>Berichterstattung ueber den SkinfitCup in vereinsinternen Medien</li>
-              <li>Dokumentation und Archivierung der Veranstaltung</li>
+              <li>Website des SkinfitCup (<a href="https://www.sfc-rsv.de" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">www.sfc-rsv.de</a>)</li>
+              <li>Instagram-Seite des SkinfitCup</li>
             </ul>
 
-            <h3 className="font-bold text-gray-800 mt-4 mb-1">Umfang und Rechte</h3>
             <p className="text-gray-600 mb-3">
-              Die Einwilligung umfasst die <strong>unentgeltliche Nutzung</strong> der Aufnahmen in den oben genannten Medien. Eine Weitergabe an Dritte zu kommerziellen Zwecken erfolgt nicht. Die Aufnahmen werden ausschliesslich im Zusammenhang mit dem SkinfitCup und den Aktivitaeten des RSV Stuttgart-Vaihingen e.&thinsp;V. verwendet.
+              Rechtsgrundlage ist Ihre Einwilligung gemaess Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO in Verbindung mit &sect;&nbsp;22 KunstUrhG (Recht am eigenen Bild). Durch die Veroeffentlichung auf Instagram werden Ihre Bilddaten an Meta Platforms Ireland Ltd. uebermittelt und moeglicherweise in Drittlaender (u.&nbsp;a. USA) uebertragen.
             </p>
 
             <h3 className="font-bold text-gray-800 mt-4 mb-1">Widerruf</h3>
             <p className="text-gray-600 mb-3">
-              Die Einwilligung kann jederzeit <strong>schriftlich oder per E-Mail</strong> an den Organisator widerrufen werden (siehe Kontaktdaten unten). Im Falle eines Widerrufs werden betroffene Aufnahmen zeitnah aus den oben genannten Medien entfernt, soweit dies technisch moeglich und zumutbar ist. Der Widerruf gilt fuer die zukuenftige Verwendung; bereits erfolgte Veroeffentlichungen koennen aus technischen Gruenden (z.&thinsp;B. Caching, Druckerzeugnisse) nicht in jedem Fall rueckgaengig gemacht werden.
+              Sie koennen Ihre Einwilligung jederzeit ohne Angabe von Gruenden formlos widerrufen (z.&nbsp;B. per E-Mail an{' '}
+              <a href="mailto:eberhard.janzen50@gmail.com" className="text-primary hover:underline">eberhard.janzen50@gmail.com</a>
+              {' '}oder ueber Ihr Profil auf der Website). Im Falle des Widerrufs werden die betreffenden Aufnahmen unverzueglich von der Website und den Social-Media-Kanaelen entfernt.
             </p>
 
             <div className="bg-red-50 border-l-4 border-primary p-4 rounded-r-lg">

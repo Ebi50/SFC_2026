@@ -16,6 +16,7 @@ import seasonsRouter from './routes/seasons';
 import homeRouter from './routes/home';
 import userAuthRouter from './routes/userAuth';
 import dataTransferRouter from './routes/dataTransfer';
+import adminRouter from './routes/admin';
 
 // Initialize database
 import { initDatabase, db } from './database';
@@ -148,6 +149,7 @@ async function startServer() {
     app.use('/api/home', homeRouter);
     app.use('/api/user', userAuthRouter);
     app.use('/api/data', dataTransferRouter);
+    app.use('/api/admin', adminRouter);
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {

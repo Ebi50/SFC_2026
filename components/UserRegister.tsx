@@ -20,6 +20,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
     perfClass: PerfClass.C,
     isRsvMember: false,
     waiverAccepted: false,
+    fotoConsent: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +67,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
         perfClass: form.perfClass,
         isRsvMember: form.isRsvMember,
         waiverAccepted: form.waiverAccepted,
+        fotoConsent: form.fotoConsent,
       });
       onNavigate('events');
     } catch (err: any) {
@@ -237,7 +239,7 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
           <label htmlFor="isRsvMember" className="text-sm text-gray-700">RSV-Mitglied</label>
         </div>
 
-        {/* Teilnahmeerklaerung */}
+        {/* Teilnahmeerklaerung (Pflicht) */}
         <div className={`border-2 rounded-lg p-4 transition-colors ${form.waiverAccepted ? 'border-green-500 bg-green-50' : 'border-primary bg-red-50'}`}>
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -250,9 +252,25 @@ export const UserRegister: React.FC<UserRegisterProps> = ({ onNavigate }) => {
             <span className="text-sm text-gray-800">
               Ich habe die{' '}
               <button type="button" onClick={() => onNavigate('teilnahmeerklaerung')} className="text-primary hover:underline font-semibold">
-                Teilnahmeerklaerung, den Haftungsverzicht und die Bildrechte-Einwilligung
+                Teilnahmeerklaerung &amp; den Haftungsverzicht
               </button>
-              {' '}gelesen und erklaere mich damit einverstanden. Ich nehme auf eigenes Risiko teil, verzichte auf Regressansprueche und stimme der Veroeffentlichung von Fotos/Videos zu. *
+              {' '}gelesen und erklaere mich damit einverstanden. Ich nehme auf eigenes Risiko teil und verzichte auf Regressansprueche. *
+            </span>
+          </label>
+        </div>
+
+        {/* Foto-Einwilligung (Freiwillig) */}
+        <div className={`border-2 rounded-lg p-4 transition-colors ${form.fotoConsent ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'}`}>
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="fotoConsent"
+              checked={form.fotoConsent}
+              onChange={handleChange}
+              className="mt-1 w-5 h-5 accent-green-600"
+            />
+            <span className="text-sm text-gray-800">
+              <strong>Freiwillig:</strong> Ich willige ein, dass Fotos/Videos, auf denen ich erkennbar bin, auf der SkinfitCup-Website und auf Instagram veroeffentlicht werden duerfen. Ich kann diese Einwilligung jederzeit widerrufen.
             </span>
           </label>
         </div>

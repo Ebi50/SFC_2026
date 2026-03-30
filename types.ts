@@ -39,6 +39,8 @@ export interface Participant {
   perfClass: PerfClass;
   gender: Gender;
   isRsvMember: boolean;
+  fotoConsent?: boolean;
+  fotoConsentAt?: string;
   club?: string;
   startNumber?: string;
   nationality?: string;
@@ -141,6 +143,7 @@ export interface UserRegistrationData {
   gender: Gender;
   perfClass: PerfClass;
   isRsvMember: boolean;
+  fotoConsent?: boolean;
 }
 
-export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'impressionen' | 'settings' | 'eventDetail' | 'impressum' | 'teilnahmeerklaerung' | 'userLogin' | 'userRegister' | 'userProfile' | 'forgotPassword' | 'resetPassword';
+export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'impressionen' | 'settings' | 'eventDetail' | 'impressum' | 'teilnahmeerklaerung' | 'userLogin' | 'userRegister' | 'userProfile' | 'forgotPassword' | 'resetPassword' | 'gdpr';

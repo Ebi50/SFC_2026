@@ -188,6 +188,10 @@ export const userApi = {
 
   acceptWaiver: () => apiRequest('/user/accept-waiver', { method: 'POST' }),
 
+  grantFotoConsent: () => apiRequest('/user/foto-consent', { method: 'POST' }),
+
+  revokeFotoConsent: () => apiRequest('/user/foto-consent', { method: 'DELETE' }),
+
   getMyRegistrations: () => apiRequest('/user/registrations'),
 
   deleteAccount: (password: string) => apiRequest('/user/account', {

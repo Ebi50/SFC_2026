@@ -8,7 +8,7 @@ const router = express.Router();
 
 // POST /api/user/register
 router.post('/register', async (req, res) => {
-  const { email, password, firstName, lastName, phone, birthYear, gender, perfClass, isRsvMember, waiverAccepted } = req.body;
+  const { email, password, firstName, lastName, phone, birthYear, gender, perfClass, isRsvMember, waiverAccepted, fotoConsent } = req.body;
 
   // Validate required fields
   if (!email || !password || !firstName || !lastName || !birthYear || !gender || !perfClass) {
@@ -44,14 +44,14 @@ router.post('/register', async (req, res) => {
 
       // Link to existing participant and update their email
       participantId = existingParticipant.id;
-      db.prepare('UPDATE participants SET email = ?, phone = ?, perfClass = ?, gender = ?, isRsvMember = ?, waiverAccepted = ?, waiverAcceptedAt = ? WHERE id = ?')
-        .run(email.trim().toLowerCase(), phone?.trim() || null, perfClass, gender, isRsvMember ? 1 : 0, waiverAccepted ? 1 : 0, waiverAccepted ? new Date().toISOString() : null, participantId);
+      db.prepare('UPDATE participants SET email = ?, phone = ?, perfClass = ?, gender = ?, isRsvMember = ?, waiverAccepted = ?, waiverAcceptedAt = ?, fotoConsent = ?, fotoConsentAt = ? WHERE id = ?')
+        .run(email.trim().toLowerCase(), phone?.trim() || null, perfClass, gender, isRsvMember ? 1 : 0, waiverAccepted ? 1 : 0, waiverAccepted ? new Date().toISOString() : null, fotoConsent ? 1 : 0, fotoConsent ? new Date().toISOString() : null, participantId);
     } else {
       // Create new participant
       participantId = 'p' + Date.now() + Math.random().toString(36).substring(2, 15);
       db.prepare(
-        'INSERT INTO participants (id, firstName, lastName, email, phone, birthYear, perfClass, gender, isRsvMember, waiverAccepted, waiverAcceptedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-      ).run(participantId, firstName.trim(), lastName.trim(), email.trim().toLowerCase(), phone?.trim() || null, birthYear, perfClass, gender, isRsvMember ? 1 : 0, waiverAccepted ? 1 : 0, waiverAccepted ? new Date().toISOString() : null);
+        'INSERT INTO participants (id, firstName, lastName, email, phone, birthYear, perfClass, gender, isRsvMember, waiverAccepted, waiverAcceptedAt, fotoConsent, fotoConsentAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(participantId, firstName.trim(), lastName.trim(), email.trim().toLowerCase(), phone?.trim() || null, birthYear, perfClass, gender, isRsvMember ? 1 : 0, waiverAccepted ? 1 : 0, waiverAccepted ? new Date().toISOString() : null, fotoConsent ? 1 : 0, fotoConsent ? new Date().toISOString() : null);
     }
 
     // Hash password and create user
@@ -297,6 +297,36 @@ router.post('/accept-waiver', (req, res) => {
     db.prepare('UPDATE participants SET waiverAccepted = 1, waiverAcceptedAt = ? WHERE id = ?')
       .run(new Date().toISOString(), req.session.participantId);
     res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// POST /api/user/foto-consent — Foto-Einwilligung erteilen
+router.post('/foto-consent', (req, res) => {
+  if (!req.session.userId || !req.session.participantId) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  try {
+    db.prepare('UPDATE participants SET fotoConsent = 1, fotoConsentAt = ? WHERE id = ?')
+      .run(new Date().toISOString(), req.session.participantId);
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// DELETE /api/user/foto-consent — Foto-Einwilligung widerrufen
+router.delete('/foto-consent', (req, res) => {
+  if (!req.session.userId || !req.session.participantId) {
+    return res.status(401).json({ error: 'Nicht angemeldet.' });
+  }
+
+  try {
+    db.prepare('UPDATE participants SET fotoConsent = 0, fotoConsentAt = NULL WHERE id = ?')
+      .run(req.session.participantId);
+    res.json({ success: true, message: 'Foto-Einwilligung widerrufen.' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

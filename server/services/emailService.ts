@@ -68,6 +68,31 @@ export async function sendPasswordResetEmail(toEmail: string, resetToken: string
   }
 }
 
+export async function sendBulkEmail(
+  bccRecipients: string[],
+  subject: string,
+  htmlBody: string
+): Promise<{ success: boolean; count: number }> {
+  if (!transporter) {
+    throw new Error('Email-Service nicht konfiguriert');
+  }
+
+  if (bccRecipients.length === 0) {
+    throw new Error('Keine Empfänger vorhanden');
+  }
+
+  // Send as BCC so recipients cannot see each other
+  await transporter.sendMail({
+    from: `"SkinfitCup" <${SMTP_FROM}>`,
+    to: SMTP_FROM, // sender as visible recipient
+    bcc: bccRecipients,
+    subject,
+    html: htmlBody,
+  });
+
+  return { success: true, count: bccRecipients.length };
+}
+
 export function isEmailConfigured(): boolean {
   return transporter !== null;
 }

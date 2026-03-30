@@ -288,6 +288,53 @@ export const UserProfile: React.FC<UserProfileProps> = ({ onBack }) => {
         </form>
       </div>
 
+      {/* Foto-Einwilligung */}
+      <div className="bg-white rounded-2xl shadow-card p-6 mt-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Foto-Einwilligung</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Erlaube die Veröffentlichung von Fotos/Videos, auf denen du erkennbar bist, auf der SkinfitCup-Website und auf Instagram. Diese Einwilligung ist freiwillig und kann jederzeit widerrufen werden.
+        </p>
+        <div className={`border-2 rounded-lg p-4 transition-colors ${
+          profile?.fotoConsent ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className={`text-2xl ${profile?.fotoConsent ? 'text-green-600' : 'text-gray-400'}`}>
+                {profile?.fotoConsent ? '✓' : '✗'}
+              </span>
+              <span className="text-sm font-medium text-gray-800">
+                {profile?.fotoConsent
+                  ? `Foto-Einwilligung erteilt${profile?.fotoConsentAt ? ` am ${new Date(profile.fotoConsentAt).toLocaleDateString('de-DE')}` : ''}`
+                  : 'Keine Foto-Einwilligung erteilt'
+                }
+              </span>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  if (profile?.fotoConsent) {
+                    await userApi.revokeFotoConsent();
+                    setProfile({ ...profile, fotoConsent: false, fotoConsentAt: null });
+                  } else {
+                    await userApi.grantFotoConsent();
+                    setProfile({ ...profile, fotoConsent: true, fotoConsentAt: new Date().toISOString() });
+                  }
+                } catch (err: any) {
+                  setError(err?.message || 'Fehler bei der Foto-Einwilligung.');
+                }
+              }}
+              className={`font-bold py-2 px-4 rounded-lg transition-colors text-sm ${
+                profile?.fotoConsent
+                  ? 'bg-red-100 hover:bg-red-200 text-red-700'
+                  : 'bg-green-100 hover:bg-green-200 text-green-700'
+              }`}
+            >
+              {profile?.fotoConsent ? 'Widerrufen' : 'Einwilligung erteilen'}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Account Deletion */}
       <div className="bg-white rounded-2xl shadow-card p-6 mt-6 border border-red-200">
         <h2 className="text-xl font-bold text-red-600 mb-2">Konto löschen</h2>

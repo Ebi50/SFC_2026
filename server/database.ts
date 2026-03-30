@@ -200,6 +200,46 @@ export function initDatabase() {
   addColumnIfNotExists('participants', 'waiverAccepted', 'BOOLEAN DEFAULT 0');
   addColumnIfNotExists('participants', 'waiverAcceptedAt', 'DATETIME');
 
+  // Add GDPR data consent tracking
+  addColumnIfNotExists('participants', 'dataConsent', 'BOOLEAN DEFAULT 0');
+  addColumnIfNotExists('participants', 'dataConsentAt', 'DATETIME');
+
+  // Add photo consent tracking (separate from waiver, DSGVO-compliant)
+  addColumnIfNotExists('participants', 'fotoConsent', 'BOOLEAN DEFAULT 0');
+  addColumnIfNotExists('participants', 'fotoConsentAt', 'DATETIME');
+
+  // Auto-set dataConsent for participants who have a user account (self-registered)
+  try {
+    const updated = db.prepare(`
+      UPDATE participants SET dataConsent = 1, dataConsentAt = CURRENT_TIMESTAMP
+      WHERE dataConsent = 0 AND id IN (SELECT participantId FROM users)
+    `).run();
+    if (updated.changes > 0) {
+      console.log(`Auto-set dataConsent for ${updated.changes} self-registered participants`);
+    }
+  } catch (error) {
+    console.error('Error auto-setting dataConsent:', error);
+  }
+
+  // GDPR auto-anonymization: remove contact data for participants without consent after deadline
+  const GDPR_DEADLINE = '2026-05-31';
+  const now = new Date().toISOString().split('T')[0];
+  if (now >= GDPR_DEADLINE) {
+    try {
+      const anonymized = db.prepare(`
+        UPDATE participants
+        SET email = NULL, phone = NULL, address = NULL, city = NULL, postalCode = NULL
+        WHERE dataConsent = 0
+          AND (email IS NOT NULL OR phone IS NOT NULL OR address IS NOT NULL OR city IS NOT NULL OR postalCode IS NOT NULL)
+      `).run();
+      if (anonymized.changes > 0) {
+        console.log(`GDPR: Anonymized contact data for ${anonymized.changes} participants without consent (deadline: ${GDPR_DEADLINE})`);
+      }
+    } catch (error) {
+      console.error('Error during GDPR anonymization:', error);
+    }
+  }
+
   // Migration: Fix participants with NULL IDs
   try {
     const nullIdParticipants = db.prepare('SELECT rowid, firstName, lastName FROM participants WHERE id IS NULL').all() as Array<{rowid: number, firstName: string, lastName: string}>;
@@ -249,7 +289,11 @@ export function sanitizeParticipant(participant: any, includeContactInfo: boolea
       email: participant.email || '',
       phone: participant.phone || '',
       waiverAccepted: Boolean(participant.waiverAccepted),
-      waiverAcceptedAt: participant.waiverAcceptedAt || null
+      waiverAcceptedAt: participant.waiverAcceptedAt || null,
+      dataConsent: Boolean(participant.dataConsent),
+      dataConsentAt: participant.dataConsentAt || null,
+      fotoConsent: Boolean(participant.fotoConsent),
+      fotoConsentAt: participant.fotoConsentAt || null
     };
   }
 
