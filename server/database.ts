@@ -170,6 +170,29 @@ export function initDatabase() {
   addColumnIfNotExists('events', 'timeVereinsheim', 'TEXT');
   addColumnIfNotExists('events', 'timeStrecke', 'TEXT');
 
+  // Backfill default times for existing events that have no times set
+  try {
+    const defaultTimeMap: Record<string, { vereinsheim: string; strecke: string }> = {
+      'Handicap': { vereinsheim: '18:00', strecke: '18:30' },
+      'EZF': { vereinsheim: '17:45', strecke: '18:30' },
+      'MZF': { vereinsheim: '17:30', strecke: '18:30' },
+      'BZF': { vereinsheim: '17:30', strecke: '18:30' },
+    };
+    const eventsWithoutTimes = db.prepare(
+      'SELECT id, eventType FROM events WHERE timeVereinsheim IS NULL OR timeStrecke IS NULL'
+    ).all() as Array<{ id: string; eventType: string }>;
+    if (eventsWithoutTimes.length > 0) {
+      const updateStmt = db.prepare('UPDATE events SET timeVereinsheim = ?, timeStrecke = ? WHERE id = ?');
+      for (const evt of eventsWithoutTimes) {
+        const defaults = defaultTimeMap[evt.eventType] || { vereinsheim: '18:00', strecke: '18:30' };
+        updateStmt.run(defaults.vereinsheim, defaults.strecke, evt.id);
+      }
+      console.log(`Backfilled default times for ${eventsWithoutTimes.length} events`);
+    }
+  } catch (error) {
+    console.error('Error backfilling event times:', error);
+  }
+
   // Add missing columns to results table
   addColumnIfNotExists('results', 'timeSeconds', 'INTEGER');
   addColumnIfNotExists('results', 'dnf', 'BOOLEAN DEFAULT 0');
