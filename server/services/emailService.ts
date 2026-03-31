@@ -83,8 +83,8 @@ export async function sendBulkEmail(
     throw new Error('Keine Empfänger vorhanden');
   }
 
-  // Brevo allows max 99 BCC recipients per call - split into batches
-  const BATCH_SIZE = 99;
+  // Brevo allows max 99 total recipients (to + bcc) per call - use 98 for BCC since 'to' takes 1
+  const BATCH_SIZE = 50;
   for (let i = 0; i < bccRecipients.length; i += BATCH_SIZE) {
     const batch = bccRecipients.slice(i, i + BATCH_SIZE);
     await sendViaBrevo({
