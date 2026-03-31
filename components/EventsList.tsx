@@ -110,6 +110,8 @@ export const EventsList: React.FC<EventsListProps> = ({ events, onNewEvent, onEd
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Name</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Datum</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Typ</th>
+                <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Vereinsheim</th>
+                <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Strecke</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Status</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Notizen</th>
                 <th className="p-4 font-semibold text-sm text-gray-600 tracking-wider">Bericht</th>
@@ -134,6 +136,8 @@ export const EventsList: React.FC<EventsListProps> = ({ events, onNewEvent, onEd
                     </td>
                     <td className="p-4 text-gray-700">{formatDate(event.date)}</td>
                     <td className="p-4 text-gray-700">{eventTypeLabels[event.eventType]}</td>
+                    <td className="p-4 text-gray-700">{event.timeVereinsheim || '—'}</td>
+                    <td className="p-4 text-gray-700">{event.timeStrecke || '—'}</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                         event.finished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
@@ -192,7 +196,7 @@ export const EventsList: React.FC<EventsListProps> = ({ events, onNewEvent, onEd
               })}
               {events.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-4 text-center text-gray-500">
+                  <td colSpan={10} className="p-4 text-center text-gray-500">
                     Keine Events vorhanden. Erstellen Sie ein neues Event.
                   </td>
                 </tr>

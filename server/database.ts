@@ -166,6 +166,10 @@ export function initDatabase() {
   // Add report field to events table
   addColumnIfNotExists('events', 'report', 'TEXT');
 
+  // Add time fields to events table
+  addColumnIfNotExists('events', 'timeVereinsheim', 'TEXT');
+  addColumnIfNotExists('events', 'timeStrecke', 'TEXT');
+
   // Add missing columns to results table
   addColumnIfNotExists('results', 'timeSeconds', 'INTEGER');
   addColumnIfNotExists('results', 'dnf', 'BOOLEAN DEFAULT 0');

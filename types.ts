@@ -57,6 +57,8 @@ export interface Event {
   report?: string;
   finished: boolean;
   season: number;
+  timeVereinsheim?: string;
+  timeStrecke?: string;
 }
 
 export interface Result {

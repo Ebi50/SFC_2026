@@ -133,14 +133,30 @@ const TeamMemberRow: React.FC<{
 export const EventFormModal: React.FC<EventFormModalProps> = ({
     onClose, onSave, event, allParticipants, eventResults, eventTeams, eventTeamMembers, settings, selectedSeason
 }) => {
+    // Default times per event type (from Reglement)
+    const getDefaultTimes = (type: EventType) => {
+        switch (type) {
+            case EventType.EZF: return { timeVereinsheim: '17:45', timeStrecke: '18:30' };
+            case EventType.MZF: return { timeVereinsheim: '17:30', timeStrecke: '18:30' };
+            case EventType.BZF: return { timeVereinsheim: '17:30', timeStrecke: '18:30' };
+            case EventType.Handicap: return { timeVereinsheim: '18:00', timeStrecke: '18:30' };
+            default: return { timeVereinsheim: '18:00', timeStrecke: '18:30' };
+        }
+    };
+
+    const initialType = event?.eventType || EventType.EZF;
+    const defaultTimes = getDefaultTimes(initialType);
+
     const [formData, setFormData] = useState<Omit<Event, 'id' | 'season'>>({
         name: event?.name || '',
         date: event?.date || new Date().toISOString().split('T')[0],
         location: event?.location || '',
-        eventType: event?.eventType || EventType.EZF,
+        eventType: initialType,
         notes: event?.notes || '',
         report: event?.report || '',
         finished: event?.finished || false,
+        timeVereinsheim: event?.timeVereinsheim || defaultTimes.timeVereinsheim,
+        timeStrecke: event?.timeStrecke || defaultTimes.timeStrecke,
     });
     
     const [results, setResults] = useState<Result[]>(eventResults);
@@ -253,6 +269,9 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
         const { name, value, type } = e.target;
         if (type === 'checkbox') {
             setFormData(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
+        } else if (name === 'eventType') {
+            const defaults = getDefaultTimes(value as EventType);
+            setFormData(prev => ({ ...prev, eventType: value as EventType, timeVereinsheim: defaults.timeVereinsheim, timeStrecke: defaults.timeStrecke }));
         } else {
             setFormData(prev => ({ ...prev, [name]: value }));
         }
@@ -746,6 +765,14 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                             <option value={EventType.MZF}>Mannschaftszeitfahren</option>
                             <option value={EventType.Handicap}>Handicap</option>
                         </select>
+                        <div>
+                            <label htmlFor="timeVereinsheim" className="block text-xs font-medium text-gray-500 mb-1">Uhrzeit Vereinsheim</label>
+                            <input type="time" id="timeVereinsheim" name="timeVereinsheim" value={formData.timeVereinsheim || ''} onChange={handleFormChange} className="p-2 border border-gray-300 rounded-md w-full" />
+                        </div>
+                        <div>
+                            <label htmlFor="timeStrecke" className="block text-xs font-medium text-gray-500 mb-1">Uhrzeit Strecke</label>
+                            <input type="time" id="timeStrecke" name="timeStrecke" value={formData.timeStrecke || ''} onChange={handleFormChange} className="p-2 border border-gray-300 rounded-md w-full" />
+                        </div>
                     </div>
                     <div>
                         <label htmlFor="event-notes" className="block text-sm font-medium text-gray-700">Notizen</label>
