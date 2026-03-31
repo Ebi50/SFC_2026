@@ -1,30 +1,32 @@
-import nodemailer from 'nodemailer';
+const BREVO_API_KEY = process.env.BREVO_API_KEY || '';
+const SMTP_FROM = process.env.SMTP_FROM || 'eberhard.janzen50@gmail.com';
+const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-const SMTP_HOST = process.env.SMTP_HOST || '';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587');
-const SMTP_USER = process.env.SMTP_USER || '';
-const SMTP_PASS = process.env.SMTP_PASS || '';
-const SMTP_FROM = process.env.SMTP_FROM || 'noreply@sfc-rsv.de';
-
-let transporter: nodemailer.Transporter | null = null;
-
-if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
-  transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: SMTP_PORT,
-    secure: SMTP_PORT === 465,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
-  });
-  console.log(`Email service configured: ${SMTP_HOST}:${SMTP_PORT}`);
+if (BREVO_API_KEY) {
+  console.log('📧 Email service configured via Brevo API');
 } else {
-  console.warn('Email service not configured - set SMTP_HOST, SMTP_USER, SMTP_PASS environment variables');
+  console.warn('📧 Email service not configured - set BREVO_API_KEY environment variable');
+}
+
+async function sendViaBrevo(payload: object): Promise<void> {
+  const response = await fetch(BREVO_API_URL, {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': BREVO_API_KEY,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`Brevo API Fehler (${response.status}): ${errorBody}`);
+  }
 }
 
 export async function sendPasswordResetEmail(toEmail: string, resetToken: string, firstName: string): Promise<boolean> {
-  if (!transporter) {
+  if (!BREVO_API_KEY) {
     console.error('Email service not configured - cannot send password reset email');
     return false;
   }
@@ -32,11 +34,11 @@ export async function sendPasswordResetEmail(toEmail: string, resetToken: string
   const resetUrl = `https://www.sfc-rsv.de/?resetToken=${resetToken}`;
 
   try {
-    await transporter.sendMail({
-      from: `"SkinfitCup" <${SMTP_FROM}>`,
-      to: toEmail,
+    await sendViaBrevo({
+      sender: { name: 'SkinfitCup', email: SMTP_FROM },
+      to: [{ email: toEmail, name: firstName }],
       subject: 'SkinfitCup – Passwort zurücksetzen',
-      html: `
+      htmlContent: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
             <h1 style="color: white; margin: 0; font-size: 24px;">SkinfitCup</h1>
@@ -73,7 +75,7 @@ export async function sendBulkEmail(
   subject: string,
   htmlBody: string
 ): Promise<{ success: boolean; count: number }> {
-  if (!transporter) {
+  if (!BREVO_API_KEY) {
     throw new Error('Email-Service nicht konfiguriert');
   }
 
@@ -81,40 +83,54 @@ export async function sendBulkEmail(
     throw new Error('Keine Empfänger vorhanden');
   }
 
-  // Send as BCC so recipients cannot see each other
-  await transporter.sendMail({
-    from: `"SkinfitCup" <${SMTP_FROM}>`,
-    to: SMTP_FROM, // sender as visible recipient
-    bcc: bccRecipients,
+  // Brevo supports BCC natively
+  await sendViaBrevo({
+    sender: { name: 'SkinfitCup', email: SMTP_FROM },
+    to: [{ email: SMTP_FROM, name: 'SkinfitCup' }],
+    bcc: bccRecipients.map(email => ({ email })),
     subject,
-    html: htmlBody,
+    htmlContent: htmlBody,
   });
 
   return { success: true, count: bccRecipients.length };
 }
 
 export function isEmailConfigured(): boolean {
-  return transporter !== null;
+  return !!BREVO_API_KEY;
 }
 
 export async function testSmtpConnection(): Promise<{ success: boolean; message: string; config: object }> {
   const config = {
-    host: SMTP_HOST || '(nicht gesetzt)',
-    port: SMTP_PORT,
-    secure: SMTP_PORT === 465,
-    user: SMTP_USER ? SMTP_USER.substring(0, 5) + '***' : '(nicht gesetzt)',
+    provider: 'Brevo API',
+    apiKeySet: !!BREVO_API_KEY,
     from: SMTP_FROM,
-    transporterCreated: transporter !== null,
   };
 
-  if (!transporter) {
-    return { success: false, message: 'Transporter nicht erstellt - SMTP-Variablen fehlen', config };
+  if (!BREVO_API_KEY) {
+    return { success: false, message: 'BREVO_API_KEY nicht gesetzt', config };
   }
 
+  // Test API connectivity by fetching account info
   try {
-    await transporter.verify();
-    return { success: true, message: 'SMTP-Verbindung erfolgreich', config };
+    const response = await fetch('https://api.brevo.com/v3/account', {
+      headers: {
+        'accept': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      return { success: false, message: `Brevo API Fehler (${response.status}): ${errorBody}`, config };
+    }
+
+    const account = await response.json();
+    return {
+      success: true,
+      message: `Brevo-Verbindung erfolgreich (Konto: ${account.email})`,
+      config: { ...config, account: account.email, plan: account.plan?.[0]?.type || 'free' },
+    };
   } catch (error: any) {
-    return { success: false, message: `SMTP-Fehler: ${error.message}`, config };
+    return { success: false, message: `Verbindungsfehler: ${error.message}`, config };
   }
 }
