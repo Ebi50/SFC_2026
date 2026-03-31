@@ -83,14 +83,18 @@ export async function sendBulkEmail(
     throw new Error('Keine Empfänger vorhanden');
   }
 
-  // Brevo supports BCC natively
-  await sendViaBrevo({
-    sender: { name: 'SkinfitCup', email: SMTP_FROM },
-    to: [{ email: SMTP_FROM, name: 'SkinfitCup' }],
-    bcc: bccRecipients.map(email => ({ email })),
-    subject,
-    htmlContent: htmlBody,
-  });
+  // Brevo allows max 99 BCC recipients per call - split into batches
+  const BATCH_SIZE = 99;
+  for (let i = 0; i < bccRecipients.length; i += BATCH_SIZE) {
+    const batch = bccRecipients.slice(i, i + BATCH_SIZE);
+    await sendViaBrevo({
+      sender: { name: 'SkinfitCup', email: SMTP_FROM },
+      to: [{ email: SMTP_FROM, name: 'SkinfitCup' }],
+      bcc: batch.map(email => ({ email })),
+      subject,
+      htmlContent: htmlBody,
+    });
+  }
 
   return { success: true, count: bccRecipients.length };
 }
