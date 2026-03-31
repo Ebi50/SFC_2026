@@ -143,8 +143,8 @@ export const EventsList: React.FC<EventsListProps> = ({ events, onNewEvent, onEd
                         {event.finished ? 'Abgeschlossen' : 'Anstehend'}
                       </span>
                     </td>
-                    <td className="p-4 text-gray-600 text-sm max-w-[150px] truncate" title={event.notes ? (() => { try { const n = JSON.parse(event.notes); return Object.values(n).filter(Boolean).join(', '); } catch { return event.notes; } })() : ''}>
-                      {event.notes ? (() => { try { const n = JSON.parse(event.notes); const vals = Object.values(n).filter(Boolean); return vals.length > 0 ? `${vals.length} Einträge` : '—'; } catch { return event.notes.substring(0, 30); } })() : '—'}
+                    <td className="p-4 text-gray-600 text-sm whitespace-pre-line">
+                      {event.notes ? (() => { try { const n = JSON.parse(event.notes); const vals = Object.values(n).filter(Boolean); return vals.length > 0 ? (vals as string[]).join('\n') : '—'; } catch { return event.notes; } })() : '—'}
                     </td>
                     <td className="p-4 text-gray-600 text-sm max-w-[150px] truncate" title={event.report || ''}>
                       {event.report ? (event.report.length > 30 ? event.report.substring(0, 30) + '...' : event.report) : '—'}
