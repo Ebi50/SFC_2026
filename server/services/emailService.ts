@@ -96,3 +96,25 @@ export async function sendBulkEmail(
 export function isEmailConfigured(): boolean {
   return transporter !== null;
 }
+
+export async function testSmtpConnection(): Promise<{ success: boolean; message: string; config: object }> {
+  const config = {
+    host: SMTP_HOST || '(nicht gesetzt)',
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465,
+    user: SMTP_USER ? SMTP_USER.substring(0, 5) + '***' : '(nicht gesetzt)',
+    from: SMTP_FROM,
+    transporterCreated: transporter !== null,
+  };
+
+  if (!transporter) {
+    return { success: false, message: 'Transporter nicht erstellt - SMTP-Variablen fehlen', config };
+  }
+
+  try {
+    await transporter.verify();
+    return { success: true, message: 'SMTP-Verbindung erfolgreich', config };
+  } catch (error: any) {
+    return { success: false, message: `SMTP-Fehler: ${error.message}`, config };
+  }
+}

@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../database';
-import { sendBulkEmail, isEmailConfigured } from '../services/emailService';
+import { sendBulkEmail, isEmailConfigured, testSmtpConnection } from '../services/emailService';
 
 const router = express.Router();
 
@@ -10,6 +10,16 @@ router.use((req, res, next) => {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
   next();
+});
+
+// GET /api/admin/test-smtp - Test SMTP connection
+router.get('/test-smtp', async (req, res) => {
+  try {
+    const result = await testSmtpConnection();
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
 });
 
 // POST /api/admin/bulk-email - Send BCC email to all participants
