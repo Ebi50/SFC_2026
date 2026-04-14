@@ -45,7 +45,6 @@ const allowedOrigins = [
   'https://sfc-rsv.de',
   'https://www.sfc-rsv.de',
   ...(process.env.RAILWAY_PUBLIC_DOMAIN ? [`https://${process.env.RAILWAY_PUBLIC_DOMAIN}`] : []),
-  ...(process.env.REPLIT_DOMAINS ? process.env.REPLIT_DOMAINS.split(',').map(d => `https://${d}`) : [])
 ];
 
 app.use(cors({

@@ -226,8 +226,10 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
 
 
     // Auto-add registered participants when editing an existing event
+    // Only if no results have been saved yet — once results exist, the admin is in control
     useEffect(() => {
         if (!event?.id) return;
+        if (eventResults.length > 0) return;
 
         eventRegistrationApi.getRegistrations(event.id).then(data => {
             const registrations = data.registrations || [];
