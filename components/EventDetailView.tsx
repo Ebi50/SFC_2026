@@ -864,7 +864,13 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                                         <span className="text-sm font-normal text-gray-500">{regs.length} Teilnehmer</span>
                                     </h3>
                                     <div className="overflow-x-auto">
-                                        <table className="w-full text-left">
+                                        <table className="w-full text-left table-fixed">
+                                            <colgroup>
+                                                <col style={{ width: '48px' }} />
+                                                <col />
+                                                <col style={{ width: '140px' }} />
+                                                <col style={{ width: '180px' }} />
+                                            </colgroup>
                                             <thead className="bg-gray-50">
                                                 <tr>
                                                     <th className="p-3 text-xs font-semibold text-gray-500 uppercase">#</th>
