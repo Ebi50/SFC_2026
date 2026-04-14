@@ -1,6 +1,6 @@
 import express from 'express';
 import { db } from '../database';
-import { sendEventEmail } from '../services/gmailService';
+import { sendBulkEmail, isEmailConfigured } from '../services/emailService';
 
 const router = express.Router();
 
@@ -228,6 +228,10 @@ router.post('/:id/send-email', async (req, res) => {
     return res.status(403).json({ error: 'Keine Berechtigung' });
   }
 
+  if (!isEmailConfigured()) {
+    return res.status(503).json({ error: 'Email-Service ist nicht konfiguriert (BREVO_API_KEY fehlt)' });
+  }
+
   const { message } = req.body;
   const eventId = req.params.id;
 
@@ -255,11 +259,24 @@ router.post('/:id/send-email', async (req, res) => {
       return res.status(400).json({ error: 'Keine E-Mail-Adressen gefunden' });
     }
 
-    const appUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-      : 'https://skinfit-cup.replit.app';
+    const htmlBody = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #dc2626, #991b1b); padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0; font-size: 24px;">SkinfitCup</h1>
+        </div>
+        <div style="padding: 30px; background: #fff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+          <p><strong>${event.name}</strong></p>
+          ${message.replace(/\n/g, '<br>')}
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+          <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+            SkinfitCup – RSV Stuttgart-Vaihingen<br>
+            <a href="https://www.sfc-rsv.de" style="color: #dc2626;">www.sfc-rsv.de</a>
+          </p>
+        </div>
+      </div>
+    `;
 
-    const result = await sendEventEmail(emails, event.name, message, appUrl);
+    const result = await sendBulkEmail(emails, `SkinfitCup – ${event.name}`, htmlBody);
 
     res.json({ success: true, emailsSent: result.count });
   } catch (error: any) {
