@@ -715,13 +715,15 @@ const App: React.FC = () => {
                 </svg>
               </div>
             </div>
-            <button 
-              onClick={() => setNewSeasonModalOpen(true)}
-              className="bg-secondary hover:bg-gray-700 text-white font-bold py-2 px-2 lg:px-4 rounded-lg flex items-center space-x-1 lg:space-x-2 transition-transform transform hover:scale-105 text-sm lg:text-base"
-            >
-              <span className="hidden lg:inline">Neue Saison</span>
-              <span className="lg:hidden">+</span>
-            </button>
+            {isAdmin && (
+              <button
+                onClick={() => setNewSeasonModalOpen(true)}
+                className="bg-secondary hover:bg-gray-700 text-white font-bold py-2 px-2 lg:px-4 rounded-lg flex items-center space-x-1 lg:space-x-2 transition-transform transform hover:scale-105 text-sm lg:text-base"
+              >
+                <span className="hidden lg:inline">Neue Saison</span>
+                <span className="lg:hidden">+</span>
+              </button>
+            )}
           </div>
         </div>
         <div className="bg-white rounded-xl shadow-md p-4 lg:p-8 min-h-full">
