@@ -61,9 +61,10 @@ router.post('/register', async (req, res) => {
     db.prepare('INSERT INTO users (id, email, passwordHash, participantId) VALUES (?, ?, ?, ?)')
       .run(userId, email.trim().toLowerCase(), passwordHash, participantId);
 
-    // Set session
+    // Set session - explicitly clear any leftover admin status
     req.session.userId = userId;
     req.session.participantId = participantId;
+    req.session.isAdmin = false;
     req.session.save((err) => {
       if (err) {
         return res.status(500).json({ error: 'Session-Fehler' });
@@ -100,6 +101,7 @@ router.post('/login', async (req, res) => {
 
     req.session.userId = user.id;
     req.session.participantId = user.participantId;
+    req.session.isAdmin = false; // Clear any leftover admin status from previous sessions
     req.session.save((err) => {
       if (err) {
         return res.status(500).json({ error: 'Session-Fehler' });

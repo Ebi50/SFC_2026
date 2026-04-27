@@ -19,6 +19,9 @@ router.post('/login', (req, res) => {
   
   if (password === adminPassword) {
     req.session.isAdmin = true;
+    // Clear any leftover user session - admin and user roles are mutually exclusive
+    req.session.userId = undefined;
+    req.session.participantId = undefined;
     req.session.save((err) => {
       if (err) {
         console.error('❌ Session save error:', err);
@@ -39,6 +42,12 @@ router.post('/logout', (req, res) => {
 });
 
 router.get('/status', (req, res) => {
+  // Defensive: a session cannot be both admin and user.
+  // If both are set (legacy/stale sessions), drop admin status.
+  if (req.session.isAdmin && req.session.userId) {
+    req.session.isAdmin = false;
+  }
+
   res.json({
     isAdmin: req.session.isAdmin || false,
     userId: req.session.userId || null,
