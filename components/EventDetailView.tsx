@@ -66,8 +66,8 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
     const [registeredParticipants, setRegisteredParticipants] = useState<any[]>([]);
     const [isRegistering, setIsRegistering] = useState(false);
 
-    // Tab state
-    const [activeTab, setActiveTab] = useState<'results' | 'registrations'>('results');
+    // Tab state - default to 'registrations' for upcoming events, 'results' for finished
+    const [activeTab, setActiveTab] = useState<'results' | 'registrations'>(event.finished ? 'results' : 'registrations');
 
     // Debounce search input
     useEffect(() => {
@@ -835,17 +835,25 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                 >
                     Anmeldungen ({registrationCount})
                 </button>
-                <button
-                    onClick={() => setActiveTab('results')}
-                    className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
-                        activeTab === 'results'
-                            ? 'border-primary text-primary'
-                            : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
-                >
-                    Ergebnisse ({results.length})
-                </button>
+                {(event.finished || isAdmin) && (
+                    <button
+                        onClick={() => setActiveTab('results')}
+                        className={`px-6 py-3 text-sm font-semibold border-b-2 transition-colors ${
+                            activeTab === 'results'
+                                ? 'border-primary text-primary'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                    >
+                        Ergebnisse ({event.finished ? results.length : '–'})
+                    </button>
+                )}
             </div>
+
+            {activeTab === 'results' && !event.finished && isAdmin && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4 text-sm text-yellow-800">
+                    Hinweis: Dieses Event ist noch nicht abgeschlossen. Die Ergebnisse sind nur für dich als Admin sichtbar.
+                </div>
+            )}
 
             {activeTab === 'registrations' && (
                 <div className="bg-white rounded-xl shadow-lg overflow-hidden">
