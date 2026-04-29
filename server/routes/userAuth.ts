@@ -6,6 +6,14 @@ import { sendPasswordResetEmail, isEmailConfigured } from '../services/emailServ
 
 const router = express.Router();
 
+function isAdminEmail(email: string): boolean {
+  const list = (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+  return list.includes(email.trim().toLowerCase());
+}
+
 // POST /api/user/register
 router.post('/register', async (req, res) => {
   const { email, password, firstName, lastName, phone, birthYear, gender, perfClass, isRsvMember, waiverAccepted, fotoConsent } = req.body;
@@ -61,10 +69,10 @@ router.post('/register', async (req, res) => {
     db.prepare('INSERT INTO users (id, email, passwordHash, participantId) VALUES (?, ?, ?, ?)')
       .run(userId, email.trim().toLowerCase(), passwordHash, participantId);
 
-    // Set session - explicitly clear any leftover admin status
+    // Set session - admin status derived from ADMIN_EMAILS env var
     req.session.userId = userId;
     req.session.participantId = participantId;
-    req.session.isAdmin = false;
+    req.session.isAdmin = isAdminEmail(email);
     req.session.save((err) => {
       if (err) {
         return res.status(500).json({ error: 'Session-Fehler' });
@@ -101,7 +109,7 @@ router.post('/login', async (req, res) => {
 
     req.session.userId = user.id;
     req.session.participantId = user.participantId;
-    req.session.isAdmin = false; // Clear any leftover admin status from previous sessions
+    req.session.isAdmin = isAdminEmail(user.email);
     req.session.save((err) => {
       if (err) {
         return res.status(500).json({ error: 'Session-Fehler' });
@@ -196,6 +204,7 @@ router.post('/reset-password', async (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.userId = undefined;
   req.session.participantId = undefined;
+  req.session.isAdmin = false;
   res.json({ success: true });
 });
 

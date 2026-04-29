@@ -45,13 +45,6 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 }
 
 export const authApi = {
-  login: (password: string) => apiRequest('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ password }),
-  }),
-  
-  logout: () => apiRequest('/auth/logout', { method: 'POST' }),
-  
   getStatus: () => apiRequest('/auth/status'),
 };
 

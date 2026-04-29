@@ -7,8 +7,6 @@ interface AuthContextType {
   isLoading: boolean;
   user: User | null;
   isLoggedIn: boolean;
-  login: (password: string) => Promise<void>;
-  logout: () => Promise<void>;
   userLogin: (email: string, password: string) => Promise<void>;
   userRegister: (data: UserRegistrationData) => Promise<void>;
   userLogout: () => Promise<void>;
@@ -43,40 +41,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (password: string) => {
-    try {
-      const result = await authApi.login(password);
-      setIsAdmin(result.isAdmin);
-    } catch (error) {
-      setIsAdmin(false);
-      throw error;
-    }
-  };
-
-  const logout = async () => {
-    await authApi.logout();
-    setIsAdmin(false);
-  };
-
   const userLogin = async (email: string, password: string) => {
     const result = await userApi.login(email, password);
     setUser(result.user);
+    const adminStatus = await authApi.getStatus();
+    setIsAdmin(adminStatus.isAdmin);
   };
 
   const userRegister = async (data: UserRegistrationData) => {
     const result = await userApi.register(data);
     setUser(result.user);
+    const adminStatus = await authApi.getStatus();
+    setIsAdmin(adminStatus.isAdmin);
   };
 
   const userLogout = async () => {
     await userApi.logout();
     setUser(null);
+    setIsAdmin(false);
   };
 
   return (
     <AuthContext.Provider value={{
       isAdmin, isLoading, user, isLoggedIn: !!user,
-      login, logout, userLogin, userRegister, userLogout
+      userLogin, userRegister, userLogout
     }}>
       {children}
     </AuthContext.Provider>
