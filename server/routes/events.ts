@@ -186,7 +186,20 @@ router.post('/:id/results', (req, res) => {
     });
 
     insertMany(results);
-    
+
+    // Die Ergebnis-Liste ist die Wahrheit darüber, wer teilgenommen hat:
+    // Anmeldungen von Teilnehmern, die der Admin aus der Liste entfernt hat,
+    // löschen – sonst fügt das Auto-Einfügen im Bearbeiten-Dialog sie beim
+    // nächsten Öffnen wieder ein. Guard: eine leere Liste löscht NICHT alle
+    // Anmeldungen (könnte ein fehlgeschlagener Frontend-Ladevorgang sein).
+    const participantIds = (results as any[]).map(r => r.participantId).filter(Boolean);
+    if (participantIds.length > 0) {
+      const placeholders = participantIds.map(() => '?').join(',');
+      db.prepare(
+        `DELETE FROM event_registrations WHERE eventId = ? AND participantId NOT IN (${placeholders})`
+      ).run(req.params.id, ...participantIds);
+    }
+
     res.json(results);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
