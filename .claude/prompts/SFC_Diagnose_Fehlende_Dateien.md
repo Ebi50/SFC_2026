@@ -3,7 +3,7 @@
 **Datum:** 16. März 2026  
 **Problem:** Reglement, Bilder und Strecken-Informationen sind auf www.sfc-rsv.de nicht mehr sichtbar (getestet von verschiedenen Rechnern mit Chrome).  
 **Tech-Stack:** Vite + React (Frontend) · Express.js + SQLite (Backend) · Railway.app (Hosting)  
-**Repo:** `C:\Users\eberh\SFC_2026`
+**Repo:** `C:\Users\eberh\APPS\SFC_APP`
 
 ---
 
@@ -245,7 +245,7 @@ Wenn kürzlich die Railway-Region geändert wurde (z.B. von US-West auf EU-West)
 
 ## Nächste Schritte
 
-1. **Öffne VS Code** mit dem Repo `C:\Users\eberh\SFC_2026`
+1. **Öffne VS Code** mit dem Repo `C:\Users\eberh\APPS\SFC_APP`
 2. Gehe die Checkliste oben durch und notiere die Ergebnisse
 3. Teile mir die Ergebnisse der `grep`-Befehle und den Inhalt von `server/index.ts` mit
 4. Dann kann ich die genaue Ursache identifizieren und eine Lösung erstellen

@@ -7,7 +7,7 @@ Führe einen vollständigen Code-Audit der SkinfitCup-Website durch. Prüfe Code
 ## Projektpfad
 
 ```
-C:\Users\eberh\SFC_2026
+C:\Users\eberh\APPS\SFC_APP
 ```
 
 ---

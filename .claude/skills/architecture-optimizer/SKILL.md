@@ -69,7 +69,7 @@ Nach User-Bestätigung:
 ## Projekt-Architektur
 
 ```
-SFC_2026/
+SFC_APP/
 ├── components/          # React-Komponenten (Frontend)
 │   ├── Dashboard.tsx    # Admin-Dashboard
 │   ├── EventsList.tsx   # Event-Verwaltung

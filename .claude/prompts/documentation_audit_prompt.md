@@ -7,7 +7,7 @@ Scanne die gesamte SFC-Codebase. Prüfe bestehende Dokumentation auf Aktualität
 ## Projektpfad
 
 ```
-C:\Users\eberh\SFC_2026
+C:\Users\eberh\APPS\SFC_APP
 ```
 
 ---

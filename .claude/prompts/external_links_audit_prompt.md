@@ -7,7 +7,7 @@ Prüfe ALLE externen Links (URLs) in sämtlichen Dateien der SFC-Website auf Err
 ## Projektpfad
 
 ```
-C:\Users\eberh\SFC_2026
+C:\Users\eberh\APPS\SFC_APP
 ```
 
 ---

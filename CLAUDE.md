@@ -7,7 +7,7 @@
 **Website:** www.sfc-rsv.de (IMMER mit www!)  
 **Zweck:** Registrierungs- und Verwaltungsplattform für das SkinfitCup Vereinstraining des RSV Stuttgart-Vaihingen  
 **Tech-Stack:** Vite + React 19 (Frontend) · Express 5 + SQLite (Backend) · Railway.app (Hosting)  
-**Repo:** `C:\Users\eberh\SFC_2026`
+**Repo:** `C:\Users\eberh\APPS\SFC_APP`
 
 ---
 
@@ -129,7 +129,7 @@ Die `.gitignore` schließt `*.png`, `*.pdf`, `*.gpx`, `*.jpg` aus!
 ## Projekt-Architektur
 
 ```
-SFC_2026/
+SFC_APP/
 ├── components/           # React-Komponenten
 │   ├── Dashboard.tsx     # Admin-Dashboard
 │   ├── EventsList.tsx    # Event-Verwaltung

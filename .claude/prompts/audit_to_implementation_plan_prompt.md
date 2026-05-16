@@ -7,7 +7,7 @@ Transformiere die Ergebnisse eines Code-Audits in einen priorisierten, ausführb
 ## Projektpfad
 
 ```
-C:\Users\eberh\SFC_2026
+C:\Users\eberh\APPS\SFC_APP
 ```
 
 ---

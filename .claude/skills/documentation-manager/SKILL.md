@@ -12,7 +12,7 @@ Der Documentation Manager scannt das SFC-Projekt, identifiziert undokumentierte 
 ## Zentraler Dokumentationsordner
 
 ```
-SFC_2026/
+SFC_APP/
 ├── README.md                        # Projekt-Übersicht
 ├── docs/
 │   ├── ARCHITECTURE.md              # System-Architektur (Frontend + Backend + Railway)
