@@ -728,7 +728,12 @@ const App: React.FC = () => {
           settings={settings}
         />
       )}
-      {isEventModalOpen && selectedSeason && (
+      {isEventModalOpen && selectedSeason && (() => {
+        const seasonForFilter = editingEvent?.season ?? selectedSeason;
+        const seasonEvents = events.filter(e => e.season === seasonForFilter);
+        const seasonEventIds = new Set(seasonEvents.map(e => e.id));
+        const seasonResults = results.filter(r => seasonEventIds.has(r.eventId));
+        return (
         <EventFormModal
           onClose={handleCloseEventModal}
           onSave={handleSaveEvent}
@@ -739,8 +744,11 @@ const App: React.FC = () => {
           eventTeamMembers={editingEvent ? teamMembers.filter(tm => teams.some(t => t.id === tm.teamId && t.eventId === editingEvent.id)) : []}
           settings={settings}
           selectedSeason={selectedSeason}
+          allSeasonEvents={seasonEvents}
+          allSeasonResults={seasonResults}
         />
-      )}
+        );
+      })()}
       {isNewSeasonModalOpen && (
         <NewSeasonModal
           onClose={() => setNewSeasonModalOpen(false)}

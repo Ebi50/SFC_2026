@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Event, Participant, Result, Team, TeamMember, EventType, Settings, GroupLabel } from '../types';
+import { Event, Participant, Result, Team, TeamMember, EventType, Settings, GroupLabel, PerfClass, Gender } from '../types';
 import { CloseIcon, PlusIcon, TrashIcon, UsersIcon } from './icons';
 import { ParticipantSelectionModal } from './ParticipantSelectionModal';
-import { calculateHandicap, getParticipantGroup } from '../services/scoringService';
+import { calculateHandicap, getResultGroup } from '../services/scoringService';
 import { eventRegistrationApi } from '../services/api';
+
+const HOBBY_CLASSES = new Set<PerfClass>([PerfClass.A, PerfClass.B]);
+const AMBITIOUS_CLASSES = new Set<PerfClass>([PerfClass.C, PerfClass.D]);
+const UPGRADE_LIMIT = 2;
 
 interface EventFormModalProps {
     onClose: () => void;
@@ -15,6 +19,8 @@ interface EventFormModalProps {
     eventTeamMembers: TeamMember[];
     settings: Settings;
     selectedSeason: number;
+    allSeasonEvents: Event[];
+    allSeasonResults: Result[];
 }
 
 const generateId = () => `id_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -131,7 +137,8 @@ const TeamMemberRow: React.FC<{
 };
 
 export const EventFormModal: React.FC<EventFormModalProps> = ({
-    onClose, onSave, event, allParticipants, eventResults, eventTeams, eventTeamMembers, settings, selectedSeason
+    onClose, onSave, event, allParticipants, eventResults, eventTeams, eventTeamMembers, settings, selectedSeason,
+    allSeasonEvents, allSeasonResults
 }) => {
     // Default times per event type (from Reglement)
     const getDefaultTimes = (type: EventType) => {
@@ -170,7 +177,27 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
     const [timeInputs, setTimeInputs] = useState<Record<string, string>>({});
 
     const participantMap = useMemo(() => new Map(allParticipants.map(p => [p.id, p])), [allParticipants]);
-    
+
+    // Aufstiegs-Zähler: pro Hobby-Teilnehmer die Anzahl bisheriger Handicap-Events
+    // dieser Saison, in denen er in C/D gestartet ist (das aktuell editierte Event
+    // wird ausgeklammert — es zählt erst nach dem Speichern).
+    const upgradeCountByParticipant = useMemo(() => {
+        const handicapEventIds = new Set(
+            allSeasonEvents
+                .filter(e => e.eventType === EventType.Handicap && e.id !== event?.id)
+                .map(e => e.id)
+        );
+        const counts = new Map<string, number>();
+        for (const r of allSeasonResults) {
+            if (!handicapEventIds.has(r.eventId)) continue;
+            if (!r.perfClass || !AMBITIOUS_CLASSES.has(r.perfClass)) continue;
+            const participant = participantMap.get(r.participantId);
+            if (!participant || !HOBBY_CLASSES.has(participant.perfClass)) continue;
+            counts.set(r.participantId, (counts.get(r.participantId) || 0) + 1);
+        }
+        return counts;
+    }, [allSeasonEvents, allSeasonResults, participantMap, event?.id]);
+
     useEffect(() => {
         if (formData.eventType === EventType.MZF) {
             const teamMemberParticipantIds = new Set(teamMembers.map(tm => tm.participantId));
@@ -459,7 +486,7 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
             const groupedResults = results.reduce<Record<GroupLabel, Result[]>>((acc, result) => {
                 const participant = participantMap.get(result.participantId);
                 if (participant) {
-                    const group = getParticipantGroup(participant);
+                    const group = getResultGroup(participant, result);
                     if (!acc[group]) acc[group] = [];
                     acc[group].push(result);
                 }
@@ -487,34 +514,82 @@ export const EventFormModal: React.FC<EventFormModalProps> = ({
                                 <div key={title} className="p-4 border rounded-lg bg-gray-50/50">
                                     <h4 className="text-md font-semibold text-gray-800 mb-3 border-b pb-2">{title}</h4>
                                     <div className="space-y-2">
-                                        {resultsForGroup.map(result => (
-                                            <div key={result.id} className="grid grid-cols-12 gap-2 items-center p-2 bg-white rounded shadow-sm">
-                                                <div className="col-span-12 md:col-span-4 font-medium">{getParticipantName(result.participantId)}</div>
-                                                <div className="col-span-6 md:col-span-3">
-                                                    <select value={result.finisherGroup || 1} onChange={(e) => handleResultChange(result.id, 'finisherGroup', parseInt(e.target.value, 10) || undefined)} className="w-full p-2 border border-gray-300 rounded-md text-sm" aria-label="Zielgruppe auswählen">
-                                                        <option value={1}>Zielgruppe 1</option>
-                                                        <option value={2}>Zielgruppe 2</option>
-                                                    </select>
-                                                </div>
-                                                <div className="col-span-6 md:col-span-3">
-                                                    <select value={result.winnerRank || 0} onChange={(e) => handleResultChange(result.id, 'winnerRank', parseInt(e.target.value) === 0 ? undefined : parseInt(e.target.value) as (1|2|3))} className="w-full p-2 border border-gray-300 rounded-md text-sm">
-                                                        <option value={0}>Kein Bonus</option>
-                                                        {winnerRanks.map(rank => (
-                                                            <option key={rank} value={rank} disabled={usedRanksInGroup.has(rank) && result.winnerRank !== rank}>
-                                                                {rank}. Platz (+{settings.winnerPoints[rank - 1] || 0} Pkt)
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
-                                                 <div className="col-span-12 md:col-span-2 flex items-center justify-end space-x-4">
-                                                    <div className="flex items-center">
-                                                        <input title="Did Not Finish" type="checkbox" id={`dnf-${result.id}`} checked={!!result.dnf} onChange={(e) => handleResultChange(result.id, 'dnf', e.target.checked)} className="h-5 w-5 text-primary focus:ring-primary-dark border-gray-300 rounded" />
-                                                        <label htmlFor={`dnf-${result.id}`} className="ml-2 text-xs text-gray-500">DNF</label>
+                                        {resultsForGroup.map(result => {
+                                            const participant = participantMap.get(result.participantId);
+                                            const stammClass = participant?.perfClass;
+                                            const startClass = (result.perfClass ?? stammClass) as PerfClass | undefined;
+
+                                            // Aufstieg / Abstieg-Badge (nur bei Männern; Frauen werden separat gewertet)
+                                            let movement: 'up' | 'down' | null = null;
+                                            if (participant && stammClass && startClass && participant.gender !== Gender.Female && stammClass !== startClass) {
+                                                const classOrder: PerfClass[] = [PerfClass.A, PerfClass.B, PerfClass.C, PerfClass.D];
+                                                movement = classOrder.indexOf(startClass) > classOrder.indexOf(stammClass) ? 'up' : 'down';
+                                            }
+
+                                            // Aufstiegs-Warnung: Hobby-Stammgruppe + Start in C/D, und schon >= UPGRADE_LIMIT-Mal in dieser Saison
+                                            const priorUpgrades = upgradeCountByParticipant.get(result.participantId) || 0;
+                                            const isUpgradeNow = !!(stammClass && HOBBY_CLASSES.has(stammClass) && startClass && AMBITIOUS_CLASSES.has(startClass));
+                                            const showUpgradeWarning = isUpgradeNow && priorUpgrades >= UPGRADE_LIMIT;
+
+                                            return (
+                                            <div key={result.id} className="bg-white rounded shadow-sm">
+                                                <div className="grid grid-cols-12 gap-2 items-center p-2">
+                                                    <div className="col-span-12 md:col-span-3 font-medium">
+                                                        {getParticipantName(result.participantId)}
+                                                        {stammClass && <span className="ml-2 text-xs text-gray-500">(Stamm: {stammClass})</span>}
                                                     </div>
-                                                    <button onClick={() => handleRemoveResult(result.id)} className="text-red-500 hover:text-red-700 p-1"><TrashIcon className="w-4 h-4"/></button>
+                                                    <div className="col-span-6 md:col-span-2">
+                                                        <select
+                                                            value={startClass || ''}
+                                                            onChange={(e) => handleResultChange(result.id, 'perfClass', e.target.value as PerfClass)}
+                                                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                                                            aria-label="Startgruppe auswählen"
+                                                            title="Startgruppe – Klasse, in der der Teilnehmer in diesem Event gefahren ist"
+                                                        >
+                                                            <option value={PerfClass.A}>Start: A</option>
+                                                            <option value={PerfClass.B}>Start: B</option>
+                                                            <option value={PerfClass.C}>Start: C</option>
+                                                            <option value={PerfClass.D}>Start: D</option>
+                                                        </select>
+                                                        {movement === 'up' && (
+                                                            <div className="mt-1 text-xs text-yellow-700 font-semibold">↑ Aufstieg</div>
+                                                        )}
+                                                        {movement === 'down' && (
+                                                            <div className="mt-1 text-xs text-blue-700 font-semibold">↓ Abstieg</div>
+                                                        )}
+                                                    </div>
+                                                    <div className="col-span-6 md:col-span-2">
+                                                        <select value={result.finisherGroup || 1} onChange={(e) => handleResultChange(result.id, 'finisherGroup', parseInt(e.target.value, 10) || undefined)} className="w-full p-2 border border-gray-300 rounded-md text-sm" aria-label="Zielgruppe auswählen">
+                                                            <option value={1}>Zielgruppe 1</option>
+                                                            <option value={2}>Zielgruppe 2</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="col-span-6 md:col-span-3">
+                                                        <select value={result.winnerRank || 0} onChange={(e) => handleResultChange(result.id, 'winnerRank', parseInt(e.target.value) === 0 ? undefined : parseInt(e.target.value) as (1|2|3))} className="w-full p-2 border border-gray-300 rounded-md text-sm">
+                                                            <option value={0}>Kein Bonus</option>
+                                                            {winnerRanks.map(rank => (
+                                                                <option key={rank} value={rank} disabled={usedRanksInGroup.has(rank) && result.winnerRank !== rank}>
+                                                                    {rank}. Platz (+{settings.winnerPoints[rank - 1] || 0} Pkt)
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="col-span-6 md:col-span-2 flex items-center justify-end space-x-4">
+                                                        <div className="flex items-center">
+                                                            <input title="Did Not Finish" type="checkbox" id={`dnf-${result.id}`} checked={!!result.dnf} onChange={(e) => handleResultChange(result.id, 'dnf', e.target.checked)} className="h-5 w-5 text-primary focus:ring-primary-dark border-gray-300 rounded" />
+                                                            <label htmlFor={`dnf-${result.id}`} className="ml-2 text-xs text-gray-500">DNF</label>
+                                                        </div>
+                                                        <button onClick={() => handleRemoveResult(result.id)} className="text-red-500 hover:text-red-700 p-1"><TrashIcon className="w-4 h-4"/></button>
+                                                    </div>
                                                 </div>
+                                                {showUpgradeWarning && (
+                                                    <div className="mx-2 mb-2 p-2 bg-red-50 border border-red-300 text-red-800 text-xs rounded">
+                                                        ⚠️ {getParticipantName(result.participantId)} startet bereits zum {priorUpgrades + 1}. Mal in dieser Saison in Ambitioniert (C/D). Bitte ggf. Stammgruppe anpassen.
+                                                    </div>
+                                                )}
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );

@@ -11,6 +11,22 @@ export const getParticipantGroup = (participant: Participant): GroupLabel => {
   return GroupLabel.Ambitious;
 };
 
+// Gruppe für die Anzeige IM EVENT-ERGEBNIS — berücksichtigt eine event-spezifische
+// Startgruppe (result.perfClass), sodass nachvollziehbar ist, in welcher Gruppe der
+// Teilnehmer für dieses Event gefahren ist (und damit, woher die Punkte stammen).
+// Frauen bleiben immer in Women. Für die Saison-Standings weiter getParticipantGroup
+// (Stammgruppe) verwenden.
+export const getResultGroup = (participant: Participant, result: Result): GroupLabel => {
+  if (participant.gender === Gender.Female) {
+    return GroupLabel.Women;
+  }
+  const effectiveClass = result.perfClass ?? participant.perfClass;
+  if ([PerfClass.A, PerfClass.B].includes(effectiveClass)) {
+    return GroupLabel.Hobby;
+  }
+  return GroupLabel.Ambitious;
+};
+
 // --- Specific Calculators ---
 
 const getPlacementPoints = (rank: number): number => {

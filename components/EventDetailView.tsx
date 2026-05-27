@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Event, Participant, Result, Team, TeamMember, Settings, EventType, GroupLabel, EventNotes } from '../types';
 import { ArrowLeftIcon, CalendarIcon, PencilIcon } from './icons';
-import { calculateHandicap, getParticipantGroup } from '../services/scoringService';
+import { calculateHandicap, getResultGroup } from '../services/scoringService';
 import { useAuth } from './AuthContext';
 import { eventsApi, eventRegistrationApi, userApi } from '../services/api';
 import { EmailEventModal } from './EmailEventModal';
@@ -518,7 +518,7 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
         const groupedResults = filteredResults.reduce<Record<GroupLabel, Result[]>>((acc, result) => {
             const participant = participantMap.get(result.participantId);
             if (participant) {
-                const group = getParticipantGroup(participant);
+                const group = getResultGroup(participant, result);
                 acc[group].push(result);
             }
             return acc;
@@ -613,7 +613,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                                                             {getParticipantName(result.participantId)}
                                                             {(() => {
                                                                 const participant = participantMap.get(result.participantId);
-                                                                return participant?.perfClass ? ` (${participant.perfClass})` : '';
+                                                                if (!participant?.perfClass) return '';
+                                                                if (result.perfClass && result.perfClass !== participant.perfClass) {
+                                                                    return ` (${result.perfClass}, Stamm: ${participant.perfClass})`;
+                                                                }
+                                                                return ` (${participant.perfClass})`;
                                                             })()}
                                                         </span>
                                                         {result.winnerRank && result.winnerRank <= settings.winnerPoints.length && (
@@ -634,7 +638,11 @@ export const EventDetailView: React.FC<EventDetailViewProps> = ({ event, partici
                                                     {getParticipantName(result.participantId)}
                                                     {(() => {
                                                         const participant = participantMap.get(result.participantId);
-                                                        return participant?.perfClass ? ` (${participant.perfClass})` : '';
+                                                        if (!participant?.perfClass) return '';
+                                                        if (result.perfClass && result.perfClass !== participant.perfClass) {
+                                                            return ` (${result.perfClass}, Stamm: ${participant.perfClass})`;
+                                                        }
+                                                        return ` (${participant.perfClass})`;
                                                     })()}
                                                 </td>
                                                 <td className="p-3 text-center">-</td>
