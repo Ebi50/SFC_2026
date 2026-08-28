@@ -1,6 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+type TechnikTab = 'reifendruck';
+
+interface TabDef {
+  id: TechnikTab;
+  label: string;
+  iframeSrc: string;
+  iframeTitle: string;
+}
+
+const TABS: TabDef[] = [
+  {
+    id: 'reifendruck',
+    label: 'Reifendruck-Kalkulator',
+    iframeSrc: '/reifendruck-kalkulator.html',
+    iframeTitle: 'Reifendruck-Kalkulator',
+  },
+];
 
 export const TechnikView: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TechnikTab>('reifendruck');
+  const current = TABS.find(t => t.id === activeTab) ?? TABS[0];
+
   return (
     <div className="h-full">
       <div className="mb-6">
@@ -14,11 +35,28 @@ export const TechnikView: React.FC = () => {
         <p className="text-gray-600 mt-2">Werkzeuge rund ums Rennrad</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-md overflow-hidden" style={{ height: 'calc(100vh - 180px)' }}>
+      <div className="border-b border-gray-200 mb-4 flex flex-wrap gap-1">
+        {TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors ${
+              activeTab === tab.id
+                ? 'bg-white text-red-600 border-b-2 border-red-600 -mb-px'
+                : 'text-gray-500 hover:text-gray-800 hover:bg-gray-50'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-white rounded-xl shadow-md overflow-hidden" style={{ height: 'calc(100vh - 240px)' }}>
         <iframe
-          src="/reifendruck-kalkulator.html"
+          key={current.id}
+          src={current.iframeSrc}
           className="w-full h-full"
-          title="Reifendruck-Kalkulator"
+          title={current.iframeTitle}
           style={{ border: 'none' }}
         />
       </div>

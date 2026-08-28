@@ -213,13 +213,8 @@
 
   <header>
     <div>
-      <p class="eyebrow">Setup · Vorstart-Check</p>
       <h1>Reifendruck<span>-Kalkulator</span></h1>
       <p class="subtitle">Errechnet den optimalen Luftdruck aus Fahrer- &amp; Radgewicht, frei wählbarer Reifenbreite (mm) und Felgenmaßen – abgeglichen mit Herstellerangaben und aktueller Impedanz-Forschung.</p>
-    </div>
-    <div class="startline">
-      <span><b>Farbschema:</b> sfc-rsv.de</span><br>
-      <span><b>Modell:</b> Breakpoint / 15%-Drop</span>
     </div>
   </header>
 
@@ -302,6 +297,15 @@
       </div>
 
       <div class="field">
+        <label>Wetter</label>
+        <div class="radio-group" id="weatherGroup">
+          <label class="radio-chip active" data-value="dry"><input type="radio" name="weather" value="dry" checked>Trocken</label>
+          <label class="radio-chip" data-value="wet"><input type="radio" name="weather" value="wet">Nass (−10 %)</label>
+        </div>
+        <p class="note">Bei Nässe empfehlen SILCA, Canyon &amp; BikeRadar rund 10 % weniger Druck (ca. 0,3–0,5 bar) für einen größeren Kontaktpatch und besseren Grip in Kurven/Bremszonen.</p>
+      </div>
+
+      <div class="field">
         <label>Zielsetzung</label>
         <div class="radio-group" id="philoGroup">
           <label class="radio-chip" data-value="classic"><input type="radio" name="philo" value="classic">Klassisch (15%-Drop)</label>
@@ -366,6 +370,7 @@
           <li>Breitenkorrektur (Potenzfunktion) – zwischen Herstellerpunkten wird linear interpoliert</li>
           <li>Felgenkorrektur: breitere Innenmaulweite (&gt;19 mm) → niedrigerer Druck nötig</li>
           <li>Untergrund: rau/Gravel −8 %, glatt +4 %</li>
+          <li>Wetter: nass −10 % (SILCA, Canyon, BikeRadar) – größerer Kontaktpatch, mehr Grip</li>
           <li>Hookless-Sicherheitslimit (72,5 psi / 5 bar) wird immer hart durchgesetzt</li>
         </ol>
         <details class="source-list">
@@ -548,6 +553,7 @@ function calculate(){
 
   const hookless = document.querySelector('input[name=hook]:checked').value === 'hookless';
   const surface = document.querySelector('input[name=surface]:checked').value;
+  const weather = document.querySelector('input[name=weather]:checked').value;
   const philosophy = document.querySelector('input[name=philo]:checked').value;
 
   const REF_WIDTH = 28;
@@ -567,6 +573,8 @@ function calculate(){
   if(surface === 'rough') surfaceFactor = 0.92;
   if(surface === 'smooth') surfaceFactor = 1.04;
   baseBar *= surfaceFactor;
+
+  if(weather === 'wet') baseBar *= 0.90;
 
   const offsetBar = 0.15 + (rearShare - 0.5) * 1.6;
 
