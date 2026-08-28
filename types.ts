@@ -148,4 +148,4 @@ export interface UserRegistrationData {
   fotoConsent?: boolean;
 }
 
-export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'impressionen' | 'settings' | 'eventDetail' | 'impressum' | 'teilnahmeerklaerung' | 'userLogin' | 'userRegister' | 'userProfile' | 'forgotPassword' | 'resetPassword' | 'gdpr';
+export type View = 'home' | 'reglement' | 'participants' | 'events' | 'strecken' | 'standings' | 'impressionen' | 'technik' | 'settings' | 'eventDetail' | 'impressum' | 'teilnahmeerklaerung' | 'userLogin' | 'userRegister' | 'userProfile' | 'forgotPassword' | 'resetPassword' | 'gdpr';

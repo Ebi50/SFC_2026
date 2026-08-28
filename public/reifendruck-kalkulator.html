@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reifendruck-Kalkulator · Rennrad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* palette derived from sfc-rsv.de theme-color #DC2626 */
+    --bg:#f7f6f3;
+    --panel:#ffffff;
+    --border:#e7e3da;
+    --ink:#1c1c1e;
+    --ink-dim:#6b6b6f;
+    --red:#dc2626;
+    --red-dark:#a51c1c;
+    --red-tint:#fdecec;
+    --amber:#b45309;
+    --amber-tint:#fdf1e0;
+    --green:#15803d;
+    --green-tint:#eaf7ee;
+    --font-display:'Oswald', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+    --font-body:'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(900px 400px at 100% -10%, #dc262610 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    min-height:100vh;
+    padding:32px 20px 60px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  header{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
+    border-bottom:3px solid var(--red);
+    padding-bottom:20px; margin-bottom:28px;
+  }
+  .eyebrow{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.16em;
+    color:var(--red); text-transform:uppercase; margin:0 0 6px; font-weight:700;
+  }
+  h1{
+    font-family:var(--font-display); font-weight:600; font-size:clamp(28px,4vw,44px);
+    margin:0; letter-spacing:.01em; line-height:1.05; color:var(--ink);
+    text-transform:uppercase;
+  }
+  h1 span{color:var(--red);}
+  .subtitle{color:var(--ink-dim); font-size:14.5px; max-width:540px; margin-top:8px; line-height:1.5;}
+  .startline{
+    font-family:var(--font-mono); font-size:11.5px; color:var(--ink-dim);
+    display:flex; gap:18px; flex-wrap:wrap; text-align:right;
+  }
+  .startline b{color:var(--ink); font-weight:600;}
+
+  .grid{display:grid; grid-template-columns: 400px 1fr; gap:24px;}
+  @media (max-width:920px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:22px 22px 26px;
+    box-shadow:0 1px 2px #00000006;
+  }
+  .panel h2{
+    font-family:var(--font-display); font-size:13px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink); margin:0 0 16px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .panel h2::before{
+    content:''; width:9px; height:9px; border-radius:2px; background:var(--red);
+    display:inline-block; transform:rotate(45deg);
+  }
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:12.5px; color:var(--ink-dim); margin-bottom:6px;
+    letter-spacing:.01em; font-weight:500;
+  }
+  .field label .val{font-family:var(--font-mono); color:var(--red); font-size:13px; font-weight:700;}
+
+  select, input[type=number]{
+    width:100%; background:#fff; color:var(--ink);
+    border:1px solid var(--border); border-radius:8px;
+    padding:10px 12px; font-family:var(--font-body); font-size:14px;
+    appearance:none; -webkit-appearance:none;
+  }
+  select{
+    background-image:linear-gradient(45deg, transparent 50%, var(--ink-dim) 50%), linear-gradient(135deg, var(--ink-dim) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+    background-size:5px 5px, 5px 5px; background-repeat:no-repeat;
+  }
+  select:focus, input:focus{outline:2px solid var(--red); outline-offset:1px;}
+
+  input[type=range]{
+    -webkit-appearance:none; width:100%; height:4px; border-radius:2px;
+    background:var(--border); outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--red); border:3px solid #fff; cursor:pointer;
+    box-shadow:0 0 0 1px var(--red);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px; height:16px; border-radius:50%; background:var(--red);
+    border:3px solid #fff; cursor:pointer;
+  }
+
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .width-input-row{display:flex; gap:10px; align-items:center;}
+  .width-input-row input[type=number]{width:78px; text-align:center; font-family:var(--font-mono); font-weight:700; flex:none;}
+  .width-input-row input[type=range]{flex:1;}
+  .divider{height:1px; background:var(--border); margin:20px 0;}
+
+  .radio-group{display:flex; gap:8px; flex-wrap:wrap;}
+  .radio-chip{
+    flex:1; min-width:80px; text-align:center;
+    background:#fff; border:1px solid var(--border);
+    border-radius:8px; padding:9px 6px; font-size:12.5px; cursor:pointer;
+    color:var(--ink-dim); transition:.15s; font-weight:500;
+  }
+  .radio-chip input{display:none;}
+  .radio-chip.active{background:var(--red-tint); border-color:var(--red); color:var(--red-dark); font-weight:700;}
+
+  .note{ font-size:11.5px; color:var(--ink-dim); line-height:1.5; margin-top:4px; }
+  .note.warn{color:var(--amber);}
+
+  .cockpit{display:flex; flex-direction:column; gap:20px;}
+  .gauges{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:600px){ .gauges{grid-template-columns:1fr;} }
+
+  .gauge-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:14px;
+    padding:20px; text-align:center; position:relative;
+    box-shadow:0 1px 2px #00000006;
+  }
+  .gauge-card .wheel-label{
+    font-family:var(--font-mono); font-size:11px; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-dim); margin-bottom:4px; font-weight:700;
+  }
+  .readout{
+    font-family:var(--font-mono); font-weight:700; font-size:44px; color:var(--ink);
+    line-height:1; margin:6px 0 2px;
+  }
+  .readout .unit{font-size:16px; color:var(--red); font-weight:600;}
+  .readout-sub{font-family:var(--font-mono); font-size:13px; color:var(--ink-dim);}
+
+  .range-bar{
+    position:relative; height:10px; border-radius:6px; margin:16px 4px 6px;
+    background:var(--border);
+  }
+  .range-bar .track{
+    position:absolute; top:0; bottom:0; border-radius:6px;
+    background:linear-gradient(90deg, #cfe9d8, var(--green), #cfe9d8);
+    opacity:.75;
+  }
+  .range-bar .needle{
+    position:absolute; top:-5px; width:3px; height:20px; background:var(--red);
+    border-radius:2px; transform:translateX(-50%);
+    box-shadow:0 0 6px 1px #dc262666;
+  }
+  .range-labels{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px; color:var(--ink-dim);}
+
+  .flag{
+    display:inline-block; margin-top:12px; font-family:var(--font-mono); font-size:11px;
+    padding:4px 10px; border-radius:20px; letter-spacing:.02em; font-weight:600;
+  }
+  .flag.ok{background:var(--green-tint); color:var(--green); border:1px solid #bfe4cb;}
+  .flag.clamped{background:var(--red-tint); color:var(--red-dark); border:1px solid #f3b8b8;}
+  .flag.belowmin{background:var(--amber-tint); color:var(--amber); border:1px solid #eccfa0;}
+
+  .summary-panel{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  @media (max-width:700px){ .summary-panel{grid-template-columns:repeat(2,1fr);} }
+  .stat{ background:#fbfaf8; border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+  .stat .k{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.08em;}
+  .stat .v{font-family:var(--font-display); font-size:19px; color:var(--ink); margin-top:4px;}
+
+  .method-panel{font-size:13px; color:var(--ink-dim); line-height:1.65;}
+  .method-panel ol, .method-panel ul{padding-left:18px; margin:8px 0;}
+  .method-panel code{
+    font-family:var(--font-mono); background:#f2f0ea; padding:1px 5px;
+    border-radius:4px; color:var(--red-dark); font-size:12px;
+  }
+  .method-panel .src{font-size:11px; color:#9a9a9e;}
+
+  details.source-list{margin-top:6px;}
+  details.source-list summary{cursor:pointer; font-family:var(--font-mono); font-size:11.5px; color:var(--ink-dim); letter-spacing:.04em; font-weight:600;}
+  details.source-list table{width:100%; border-collapse:collapse; margin-top:10px; font-size:12px;}
+  details.source-list td, details.source-list th{
+    text-align:left; padding:6px 8px; border-bottom:1px solid var(--border); color:var(--ink-dim);
+  }
+  details.source-list th{color:var(--ink); font-weight:600; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em;}
+  .tag{font-family:var(--font-mono); font-size:10px; padding:2px 6px; border-radius:4px; font-weight:700;}
+  .tag.confirmed{background:var(--green-tint); color:var(--green);}
+  .tag.estimated{background:var(--amber-tint); color:var(--amber);}
+
+  footer{margin-top:34px; text-align:center; color:var(--ink-dim); font-size:11.5px; font-family:var(--font-mono);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="eyebrow">Setup · Vorstart-Check</p>
+      <h1>Reifendruck<span>-Kalkulator</span></h1>
+      <p class="subtitle">Errechnet den optimalen Luftdruck aus Fahrer- &amp; Radgewicht, frei wählbarer Reifenbreite (mm) und Felgenmaßen – abgeglichen mit Herstellerangaben und aktueller Impedanz-Forschung.</p>
+    </div>
+    <div class="startline">
+      <span><b>Farbschema:</b> sfc-rsv.de</span><br>
+      <span><b>Modell:</b> Breakpoint / 15%-Drop</span>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <h2>Fahrer &amp; Rad</h2>
+
+      <div class="field">
+        <label>Fahrergewicht <span class="val" id="valRider">75 kg</span></label>
+        <input type="range" id="riderWeight" min="45" max="130" value="75" step="1">
+      </div>
+
+      <div class="field">
+        <label>Gewicht Rad (inkl. Zubehör) <span class="val" id="valBike">8.0 kg</span></label>
+        <input type="range" id="bikeWeight" min="5" max="15" value="8" step="0.1">
+      </div>
+
+      <div class="field">
+        <label>Gewichtsverteilung Vorne / Hinten <span class="val" id="valSplit">42 / 58</span></label>
+        <input type="range" id="split" min="35" max="50" value="42" step="1">
+        <p class="note">Standard bei Renngeometrie ca. 42/58. Bei Zeitfahrrad/Aero-Position eher Richtung 38/62.</p>
+      </div>
+
+      <div class="divider"></div>
+      <h2>Reifen</h2>
+
+      <div class="field">
+        <label>Hersteller / Modell</label>
+        <select id="tireBrand"></select>
+      </div>
+
+      <div class="field">
+        <label>Bauart</label>
+        <select id="tireType"></select>
+      </div>
+
+      <div class="field">
+        <label>Reifenbreite <span class="val" id="valWidth">28 mm</span></label>
+        <div class="width-input-row">
+          <input type="number" id="widthNumber" min="18" max="34" step="0.5" value="28">
+          <input type="range" id="widthSlider" min="18" max="34" value="28" step="0.5">
+        </div>
+        <p class="note">Frei wählbar in 0,5-mm-Schritten (18–34 mm) – zwischen Herstellerangaben wird interpoliert.</p>
+      </div>
+      <p class="note" id="brandNote"></p>
+
+      <div class="divider"></div>
+      <h2>Felge</h2>
+
+      <div class="row2">
+        <div class="field">
+          <label>Maulweite innen <span class="val" id="valRimIn">19 mm</span></label>
+          <input type="range" id="rimInner" min="13" max="25" value="19" step="0.5">
+        </div>
+        <div class="field">
+          <label>Maulweite außen <span class="val" id="valRimOut">26 mm</span></label>
+          <input type="range" id="rimOuter" min="18" max="34" value="26" step="0.5">
+        </div>
+      </div>
+      <div class="field">
+        <label>Felgentyp</label>
+        <div class="radio-group" id="rimHookGroup">
+          <label class="radio-chip active" data-value="hooked"><input type="radio" name="hook" value="hooked" checked>Hooked</label>
+          <label class="radio-chip" data-value="hookless"><input type="radio" name="hook" value="hookless">Hookless</label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <h2>Einsatz &amp; Philosophie</h2>
+
+      <div class="field">
+        <label>Untergrund</label>
+        <div class="radio-group" id="surfaceGroup">
+          <label class="radio-chip" data-value="smooth"><input type="radio" name="surface" value="smooth">Glatt</label>
+          <label class="radio-chip active" data-value="normal"><input type="radio" name="surface" value="normal" checked>Normal</label>
+          <label class="radio-chip" data-value="rough"><input type="radio" name="surface" value="rough">Rau/Gravel</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Zielsetzung</label>
+        <div class="radio-group" id="philoGroup">
+          <label class="radio-chip" data-value="classic"><input type="radio" name="philo" value="classic">Klassisch (15%-Drop)</label>
+          <label class="radio-chip active" data-value="modern"><input type="radio" name="philo" value="modern" checked>Modern (Breakpoint)</label>
+        </div>
+        <p class="note">„Modern" folgt der Impedanz-Forschung (SILCA, Wheel Energy Lab) und setzt niedriger an, wie es im heutigen Peloton üblich ist. „Klassisch" bleibt näher an der traditionellen Herstellertabelle.</p>
+      </div>
+
+    </div>
+
+    <!-- RESULTS / COCKPIT -->
+    <div class="cockpit">
+
+      <div class="gauges">
+        <div class="gauge-card">
+          <div class="wheel-label">◐ Vorderrad</div>
+          <div class="readout" id="frontBar">–<span class="unit"> bar</span></div>
+          <div class="readout-sub" id="frontPsi">– psi</div>
+          <div class="range-bar">
+            <div class="track" id="frontTrack"></div>
+            <div class="needle" id="frontNeedle"></div>
+          </div>
+          <div class="range-labels"><span id="frontMinLbl">–</span><span id="frontMaxLbl">–</span></div>
+          <div id="frontFlag"></div>
+        </div>
+
+        <div class="gauge-card">
+          <div class="wheel-label">◑ Hinterrad</div>
+          <div class="readout" id="rearBar">–<span class="unit"> bar</span></div>
+          <div class="readout-sub" id="rearPsi">– psi</div>
+          <div class="range-bar">
+            <div class="track" id="rearTrack"></div>
+            <div class="needle" id="rearNeedle"></div>
+          </div>
+          <div class="range-labels"><span id="rearMinLbl">–</span><span id="rearMaxLbl">–</span></div>
+          <div id="rearFlag"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Kennzahlen</h2>
+        <div class="summary-panel">
+          <div class="stat"><div class="k">Systemgewicht</div><div class="v" id="statTotal">– kg</div></div>
+          <div class="stat"><div class="k">Zielreifendrop</div><div class="v" id="statDrop">15 %</div></div>
+          <div class="stat"><div class="k">Herstellerbereich</div><div class="v" id="statConfidence">–</div></div>
+          <div class="stat"><div class="k">Felgenkorrektur</div><div class="v" id="statRimCorr">–</div></div>
+        </div>
+      </div>
+
+      <div class="panel method-panel">
+        <h2>Warum niedrigere Drücke? – Forschungslage</h2>
+        <p>Traditionelle Reifentabellen basieren auf der <b>15%-Tire-Drop-Regel</b> (Frank Berto), die primär Durchschläge auf der Felge verhindern sollte – nicht Geschwindigkeit optimieren. Unabhängige Labortests (Wheel Energy Lab, Finnland, im Auftrag von Velo Magazine) zeigten bereits 2012, dass niedrigerer Druck den Rollwiderstand auf der Straße <b>nicht automatisch erhöht</b> – die alte Annahme "höherer Druck = weniger Widerstand" gilt nur auf perfekt glatten Prüfständen.</p>
+        <p>SILCA hat dieses Phänomen als <b>„Impedanz"</b> beschrieben: Auf echtem Asphalt (auch scheinbar glattem) erzeugt zu hoher Druck Mikro-Stöße, die den Reifen und Fahrer anheben – das kostet mehr Watt als die Reifenkarkasse selbst verliert. Es gibt einen „Breakpoint" – jenseits davon steigt der Gesamtwiderstand trotz theoretisch niedrigerem Rollwiderstand wieder an. Faustregel aus dem Test: lieber ein paar PSI unter dem Breakpoint liegen als knapp darüber.</p>
+        <p>Ergänzend zeigt eine sport-biomechanische Studie zum Rollwiderstands-Koeffizienten, dass Reifendruck und Auflast systematisch zusammenwirken und sich nicht isoliert maximieren lassen. Fahrkomfort-Forschung (Vibrationsdosis / Ermüdung) legt zusätzlich nahe, dass zu hoher Druck auf rauem Belag die Ermüdung messbar beschleunigt – ein Effekt, der in klassischen Tabellen komplett fehlt. Das aktuelle Peloton fährt entsprechend 28–30&nbsp;mm-Reifen bei rund 5&nbsp;bar statt der früher üblichen 23&nbsp;mm bei 8&nbsp;bar.</p>
+        <p class="src">Quellen: SILCA "Rolling Resistance and Impedance" (silca.cc) · Velo Magazine / Wheel Energy Lab Test (velo.outsideonline.com) · Grappe et al., "Influence of tyre pressure and vertical load on coefficient of rolling resistance" (researchgate.net) · Leeze Rollwiderstand-Analyse (leeze.de)</p>
+        <div class="divider"></div>
+        <h2>Berechnungslogik</h2>
+        <p>Basiswert nach Systemgewicht, kalibriert an realen Herstellerangaben. Formel: <code>P = Basisdruck(Systemgewicht, Philosophie) × Breitenfaktor × Felgenkorrektur × Untergrundkorrektur</code>. Ergebnis wird auf das <b>Herstellermaximum</b> hart begrenzt (Sicherheit/Berstdruck). Die <b>Mindestangabe</b> des Herstellers wird im Modus „Modern" nur als Hinweis markiert, nicht hart erzwungen – im Modus „Klassisch" bleibt sie eine harte Untergrenze.</p>
+        <ol>
+          <li>Systemgewicht = Fahrer + Rad</li>
+          <li>Modus „Klassisch": Basis wie klassische 15%-Drop-Tabellen. Modus „Modern": ca. 12–15% niedriger, entsprechend Breakpoint-Forschung</li>
+          <li>Breitenkorrektur (Potenzfunktion) – zwischen Herstellerpunkten wird linear interpoliert</li>
+          <li>Felgenkorrektur: breitere Innenmaulweite (&gt;19 mm) → niedrigerer Druck nötig</li>
+          <li>Untergrund: rau/Gravel −8 %, glatt +4 %</li>
+          <li>Hookless-Sicherheitslimit (72,5 psi / 5 bar) wird immer hart durchgesetzt</li>
+        </ol>
+        <details class="source-list">
+          <summary>▸ Herstellerquellen &amp; Datenstatus anzeigen</summary>
+          <table>
+            <tr><th>Marke / Modell</th><th>Status</th><th>Quelle</th></tr>
+            <tr><td>Continental GP5000 (Schlauch)</td><td><span class="tag confirmed">bestätigt</span></td><td>bicyclerollingresistance.com</td></tr>
+            <tr><td>Continental GP5000 S TR</td><td><span class="tag confirmed">bestätigt</span></td><td>rollmassif.com</td></tr>
+            <tr><td>Schwalbe Pro One (Schlauch)</td><td><span class="tag confirmed">bestätigt</span></td><td>radsport-rennrad.de</td></tr>
+            <tr><td>Schwalbe Pro One TLE</td><td><span class="tag confirmed">bestätigt</span></td><td>elite-wheels.de</td></tr>
+            <tr><td>Vittoria Corsa / Rubino Pro</td><td><span class="tag confirmed">bestätigt</span></td><td>roadbikerider.com, bikepsi.com</td></tr>
+            <tr><td>Pirelli P Zero Race</td><td><span class="tag estimated">geschätzt</span></td><td>keine öffentliche Herstellertabelle gefunden – Analogiewert</td></tr>
+            <tr><td>Michelin Power Cup</td><td><span class="tag estimated">geschätzt</span></td><td>keine öffentliche Herstellertabelle gefunden – Analogiewert</td></tr>
+          </table>
+        </details>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>Richtwerte für Trainings-/Renneinsatz auf Straße · Farbschema orientiert an sfc-rsv.de · immer zusätzlich Herstellerangabe auf der Reifenflanke prüfen</footer>
+</div>
+
+<script>
+/* ---------- TIRE DATA: width points {w:{min,max}} in PSI, interpolated for arbitrary mm ---------- */
+const TIRES = {
+  "continental-gp5000": {
+    name: "Continental GP5000",
+    note: "Herstellerangaben bestätigt (Schlauch-Version).",
+    confirmed: true,
+    variants: {
+      "clincher": { label: "Schlauch (Clincher)",
+        widths: { 23:{min:110,max:120}, 25:{min:95,max:120}, 28:{min:95,max:115}, 32:{min:85,max:100} } },
+      "tubeless": { label: "Tubeless (S TR)",
+        widths: { 25:{min:60,max:109}, 28:{min:55,max:95}, 32:{min:50,max:85} },
+        hooklessMax: 72.5 }
+    }
+  },
+  "schwalbe-proone": {
+    name: "Schwalbe Pro One",
+    note: "Herstellerangaben bestätigt.",
+    confirmed: true,
+    variants: {
+      "clincher": { label: "Schlauch",
+        widths: { 23:{min:80,max:120}, 25:{min:70,max:110}, 28:{min:65,max:100} } },
+      "tubeless": { label: "Tubeless (TLE)",
+        widths: { 25:{min:55,max:95}, 28:{min:50,max:88}, 32:{min:45,max:75} },
+        hooklessMax: 72.5 }
+    }
+  },
+  "vittoria-corsapro": {
+    name: "Vittoria Corsa Pro",
+    note: "Herstellerangaben bestätigt (Sidewall-Spanne; real gefahrene Drücke liegen meist deutlich darunter).",
+    confirmed: true,
+    variants: {
+      "clincher": { label: "Schlauch (G2.0)",
+        widths: { 23:{min:95,max:150}, 25:{min:85,max:147}, 28:{min:70,max:100} } },
+      "tubeless": { label: "Tubeless (TNT)",
+        widths: { 26:{min:55,max:95}, 28:{min:50,max:88}, 30:{min:45,max:80} },
+        hooklessMax: 72.5 }
+    }
+  },
+  "pirelli-pzero": {
+    name: "Pirelli P Zero Race",
+    note: "⚠ Keine öffentliche Herstellertabelle gefunden – Werte sind Analogieschätzung. Bitte Reifenflanke prüfen!",
+    confirmed: false,
+    variants: {
+      "clincher": { label: "Schlauch",
+        widths: { 24:{min:90,max:120}, 26:{min:80,max:110}, 28:{min:75,max:100} } },
+      "tubeless": { label: "Tubeless",
+        widths: { 26:{min:55,max:90}, 28:{min:50,max:82} },
+        hooklessMax: 72.5 }
+    }
+  },
+  "michelin-powercup": {
+    name: "Michelin Power Cup",
+    note: "⚠ Keine öffentliche Herstellertabelle gefunden – Werte sind Analogieschätzung. Bitte Reifenflanke prüfen!",
+    confirmed: false,
+    variants: {
+      "clincher": { label: "Schlauch",
+        widths: { 23:{min:95,max:125}, 25:{min:87,max:116}, 28:{min:75,max:100} } }
+    }
+  }
+};
+
+/* ---------- DOM refs ---------- */
+const $ = id => document.getElementById(id);
+const riderWeightEl = $('riderWeight'), bikeWeightEl = $('bikeWeight'), splitEl = $('split');
+const tireBrandEl = $('tireBrand'), tireTypeEl = $('tireType');
+const widthNumberEl = $('widthNumber'), widthSliderEl = $('widthSlider');
+const rimInnerEl = $('rimInner'), rimOuterEl = $('rimOuter');
+
+Object.keys(TIRES).forEach(key=>{
+  const opt = document.createElement('option');
+  opt.value = key; opt.textContent = TIRES[key].name + (TIRES[key].confirmed ? '' : '  ⚠');
+  tireBrandEl.appendChild(opt);
+});
+
+function populateType(){
+  const brand = TIRES[tireBrandEl.value];
+  tireTypeEl.innerHTML = '';
+  Object.keys(brand.variants).forEach(vk=>{
+    const opt = document.createElement('option');
+    opt.value = vk; opt.textContent = brand.variants[vk].label;
+    tireTypeEl.appendChild(opt);
+  });
+  $('brandNote').textContent = brand.note;
+  $('brandNote').className = brand.confirmed ? 'note' : 'note warn';
+}
+tireBrandEl.addEventListener('change', ()=>{ populateType(); calculate(); });
+tireTypeEl.addEventListener('change', calculate);
+
+/* width number <-> slider sync */
+widthNumberEl.addEventListener('input', ()=>{ widthSliderEl.value = widthNumberEl.value; $('valWidth').textContent = widthNumberEl.value+' mm'; calculate(); });
+widthSliderEl.addEventListener('input', ()=>{ widthNumberEl.value = widthSliderEl.value; $('valWidth').textContent = widthSliderEl.value+' mm'; calculate(); });
+
+/* radio chip groups */
+document.querySelectorAll('.radio-group').forEach(group=>{
+  group.querySelectorAll('.radio-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      group.querySelectorAll('.radio-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      chip.querySelector('input').checked = true;
+      calculate();
+    });
+  });
+});
+
+riderWeightEl.addEventListener('input', ()=>{ $('valRider').textContent = riderWeightEl.value+' kg'; calculate(); });
+bikeWeightEl.addEventListener('input', ()=>{ $('valBike').textContent = parseFloat(bikeWeightEl.value).toFixed(1)+' kg'; calculate(); });
+splitEl.addEventListener('input', ()=>{ $('valSplit').textContent = splitEl.value+' / '+(100-splitEl.value); calculate(); });
+rimInnerEl.addEventListener('input', ()=>{ $('valRimIn').textContent = rimInnerEl.value+' mm'; calculate(); });
+rimOuterEl.addEventListener('input', ()=>{ $('valRimOut').textContent = rimOuterEl.value+' mm'; calculate(); });
+
+/* ---------- interpolation of manufacturer range for arbitrary width ---------- */
+function getRangeForWidth(widths, width){
+  const keys = Object.keys(widths).map(Number).sort((a,b)=>a-b);
+  if(keys.includes(width)) return widths[width];
+
+  if(width <= keys[0]){
+    const w0 = keys[0], r0 = widths[w0];
+    const scale = Math.pow(w0/width, 1.1);
+    return { min: r0.min*scale, max: r0.max*scale };
+  }
+  if(width >= keys[keys.length-1]){
+    const w1 = keys[keys.length-1], r1 = widths[w1];
+    const scale = Math.pow(w1/width, 1.1);
+    return { min: r1.min*scale, max: r1.max*scale };
+  }
+  // find surrounding pair, linear interpolate
+  for(let i=0;i<keys.length-1;i++){
+    const a=keys[i], b=keys[i+1];
+    if(width>=a && width<=b){
+      const t=(width-a)/(b-a);
+      const ra=widths[a], rb=widths[b];
+      return { min: ra.min+(rb.min-ra.min)*t, max: ra.max+(rb.max-ra.max)*t };
+    }
+  }
+  return widths[keys[0]];
+}
+
+/* ---------- CALCULATION ---------- */
+function psiToBar(psi){ return psi/14.5038; }
+function barToPsi(bar){ return bar*14.5038; }
+
+function calculate(){
+  const riderKg = parseFloat(riderWeightEl.value);
+  const bikeKg = parseFloat(bikeWeightEl.value);
+  const totalKg = riderKg + bikeKg;
+  const frontShare = parseFloat(splitEl.value)/100;
+  const rearShare = 1 - frontShare;
+
+  const brand = TIRES[tireBrandEl.value];
+  const variant = brand.variants[tireTypeEl.value];
+  let width = parseFloat(widthNumberEl.value);
+  if(isNaN(width)) width = 28;
+  width = Math.min(Math.max(width,18),34);
+
+  const range = getRangeForWidth(variant.widths, width);
+
+  const hookless = document.querySelector('input[name=hook]:checked').value === 'hookless';
+  const surface = document.querySelector('input[name=surface]:checked').value;
+  const philosophy = document.querySelector('input[name=philo]:checked').value;
+
+  const REF_WIDTH = 28;
+  let baseBar = 1.15 + 0.05 * totalKg;   // classic 15%-drop-calibrated base
+  if(philosophy === 'modern'){
+    baseBar *= 0.86;                      // Breakpoint/Impedanz-Ansatz: spürbar niedriger
+  }
+  const widthFactor = Math.pow(REF_WIDTH / width, 0.8);
+  baseBar *= widthFactor;
+
+  const rimInner = parseFloat(rimInnerEl.value);
+  const rimDelta = rimInner - 19;
+  const rimCorrFactor = 1 - (rimDelta * 0.012);
+  baseBar *= rimCorrFactor;
+
+  let surfaceFactor = 1;
+  if(surface === 'rough') surfaceFactor = 0.92;
+  if(surface === 'smooth') surfaceFactor = 1.04;
+  baseBar *= surfaceFactor;
+
+  const offsetBar = 0.15 + (rearShare - 0.5) * 1.6;
+
+  let frontBar = baseBar;
+  let rearBar = baseBar + offsetBar;
+
+  let hooklessCapBar = null;
+  if(hookless && variant.hooklessMax){
+    hooklessCapBar = psiToBar(variant.hooklessMax);
+  }
+
+  const minBar = psiToBar(range.min);
+  const maxBarRaw = psiToBar(range.max);
+  const maxBar = hooklessCapBar ? Math.min(maxBarRaw, hooklessCapBar) : maxBarRaw;
+
+  renderGauge('front', frontBar, minBar, maxBar, philosophy);
+  renderGauge('rear', rearBar, minBar, maxBar, philosophy);
+
+  $('statTotal').textContent = totalKg.toFixed(1) + ' kg';
+  $('statDrop').textContent = philosophy === 'modern' ? '~18-20 %' : '15 %';
+  $('statConfidence').textContent = brand.confirmed ? 'bestätigt' : 'geschätzt ⚠';
+  $('statConfidence').style.color = brand.confirmed ? 'var(--green)' : 'var(--amber)';
+  $('statRimCorr').textContent = (rimCorrFactor>=1?'+':'') + ((rimCorrFactor-1)*100).toFixed(1) + ' %';
+}
+
+function renderGauge(prefix, barRaw, minBar, maxBar, philosophy){
+  let clampedMax = false, belowMin = false;
+  let bar = barRaw;
+
+  // hard cap at manufacturer/hookless max always
+  if(bar > maxBar){ bar = maxBar; clampedMax = true; }
+
+  // min: hard floor in classic mode, soft warning in modern mode
+  if(bar < minBar){
+    if(philosophy === 'classic'){ bar = minBar; }
+    else { belowMin = true; }
+  }
+
+  $(prefix+'Bar').innerHTML = bar.toFixed(2) + '<span class="unit"> bar</span>';
+  $(prefix+'Psi').textContent = barToPsi(bar).toFixed(0) + ' psi';
+  $(prefix+'MinLbl').textContent = minBar.toFixed(1)+' bar';
+  $(prefix+'MaxLbl').textContent = maxBar.toFixed(1)+' bar';
+
+  const lo = Math.min(minBar, bar) - 0.1;
+  const hi = Math.max(maxBar, bar) + 0.1;
+  const pct = Math.min(Math.max((bar-lo)/(hi-lo),0),1) * 100;
+  $(prefix+'Needle').style.left = pct + '%';
+  $(prefix+'Track').style.left = '4%';
+  $(prefix+'Track').style.right = '4%';
+
+  const flagEl = $(prefix+'Flag');
+  if(clampedMax){
+    flagEl.innerHTML = '<span class="flag clamped">⚠ auf Herstellermaximum begrenzt</span>';
+  } else if(belowMin){
+    flagEl.innerHTML = '<span class="flag belowmin">ℹ unter Herstellerminimum (Modern-Modus, bewusste Wahl)</span>';
+  } else {
+    flagEl.innerHTML = '<span class="flag ok">✓ innerhalb Herstellerkorridor</span>';
+  }
+}
+
+/* init */
+populateType();
+calculate();
+</script>
+</body>
+</html>
