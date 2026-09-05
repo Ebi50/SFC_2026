@@ -17,6 +17,7 @@ import homeRouter from './routes/home';
 import userAuthRouter from './routes/userAuth';
 import dataTransferRouter from './routes/dataTransfer';
 import adminRouter from './routes/admin';
+import backupRouter from './routes/backup';
 
 // Initialize database
 import { initDatabase, db } from './database';
@@ -76,8 +77,12 @@ app.use(express.json({ limit: '50mb' }));
 app.set('trust proxy', 1);
 
 // Session configuration
-const SESSION_SECRET = process.env.SESSION_SECRET || 'skinfit-cup-dev-secret-2025-stable';
 const isProduction = process.env.NODE_ENV === 'production';
+if (isProduction && !process.env.SESSION_SECRET) {
+  console.error('❌ SESSION_SECRET fehlt in Produktion. Server wird nicht gestartet.');
+  process.exit(1);
+}
+const SESSION_SECRET = process.env.SESSION_SECRET || 'skinfit-cup-dev-secret-2025-stable';
 
 app.use(session({
   store: new SqliteSessionStore(),
@@ -149,6 +154,7 @@ async function startServer() {
     app.use('/api/user', userAuthRouter);
     app.use('/api/data', dataTransferRouter);
     app.use('/api/admin', adminRouter);
+    app.use('/api/backup', backupRouter);
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {

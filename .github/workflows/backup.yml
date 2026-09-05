@@ -1,0 +1,35 @@
+name: Daily Database Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # täglich 03:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Backup-Repo auschecken
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.BACKUP_REPO }}
+          token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          path: backup-repo
+
+      - name: Daten von sfc-rsv.de abrufen
+        run: |
+          curl -sf -H "x-backup-key: ${{ secrets.BACKUP_API_KEY }}" \
+            https://www.sfc-rsv.de/api/backup/full \
+            -o "backup-repo/backup-$(date -u +%Y-%m-%dT%H-%M-%SZ).json"
+
+      - name: Backups älter als 90 Tage löschen
+        run: find backup-repo -maxdepth 1 -name 'backup-*.json' -mtime +90 -delete
+
+      - name: Commit & Push
+        working-directory: backup-repo
+        run: |
+          git config user.name "sfc-backup-bot"
+          git config user.email "actions@github.com"
+          git add backup-*.json
+          git diff --cached --quiet && echo "Keine Änderungen" || git commit -m "Backup $(date -u +%Y-%m-%d)"
+          git push
