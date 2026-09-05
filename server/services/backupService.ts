@@ -43,3 +43,24 @@ export function collectFiles() {
   }
   return files;
 }
+
+const SNAPSHOT_DIR = isRailway ? '/data/import-snapshots' : path.join(process.cwd(), 'import-snapshots');
+const MAX_SNAPSHOTS = 10;
+
+// Sicherheitsnetz: wird vor jedem Voll-Import aufgerufen, der die DB leert und neu befuellt.
+// Ohne dieses Snapshot waere ein Fehl-Import (falsche Datei, Bug) sofort unwiederbringlich.
+export function writePreImportSnapshot() {
+  if (!fs.existsSync(SNAPSHOT_DIR)) fs.mkdirSync(SNAPSHOT_DIR, { recursive: true });
+
+  const filename = `pre-import-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+  fs.writeFileSync(path.join(SNAPSHOT_DIR, filename), JSON.stringify(exportDatabase()));
+
+  const files = fs.readdirSync(SNAPSHOT_DIR)
+    .filter(f => f.startsWith('pre-import-'))
+    .sort();
+  for (const old of files.slice(0, -MAX_SNAPSHOTS)) {
+    fs.unlinkSync(path.join(SNAPSHOT_DIR, old));
+  }
+
+  return filename;
+}

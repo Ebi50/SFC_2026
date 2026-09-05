@@ -1,5 +1,6 @@
 import express from 'express';
 import { db } from '../database';
+import { writePreImportSnapshot } from '../services/backupService';
 
 const router = express.Router();
 
@@ -45,6 +46,10 @@ router.post('/import', (req, res) => {
   const data = req.body;
 
   try {
+    // Sicherheitsnetz: vor dem Ueberschreiben einen Snapshot des aktuellen Stands sichern
+    const snapshotFile = writePreImportSnapshot();
+    console.log(`Pre-import snapshot gespeichert: ${snapshotFile}`);
+
     const importTransaction = db.transaction(() => {
       // Clear existing data (in correct order for foreign keys)
       db.exec('DELETE FROM team_members');

@@ -1,10 +1,29 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import rateLimit from 'express-rate-limit';
 import { db } from '../database';
 import { sendPasswordResetEmail, isEmailConfigured } from '../services/emailService';
 
 const router = express.Router();
+
+// Brute-Force-Schutz: begrenzt Login-/Registrierungsversuche pro IP
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Zu viele Versuche. Bitte in 15 Minuten erneut versuchen.' }
+});
+
+// Strengeres Limit für Passwort-Reset-Mails (Schutz vor Spam/Enumeration)
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Zu viele Anfragen. Bitte in einer Stunde erneut versuchen.' }
+});
 
 function isAdminEmail(email: string): boolean {
   const list = (process.env.ADMIN_EMAILS || '')
@@ -15,7 +34,7 @@ function isAdminEmail(email: string): boolean {
 }
 
 // POST /api/user/register
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   const { email, password, firstName, lastName, phone, birthYear, gender, perfClass, isRsvMember, waiverAccepted, fotoConsent } = req.body;
 
   // Validate required fields
@@ -89,7 +108,7 @@ router.post('/register', async (req, res) => {
 });
 
 // POST /api/user/login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -126,7 +145,7 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/user/forgot-password
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
   const { email } = req.body;
 
   if (!email) {
