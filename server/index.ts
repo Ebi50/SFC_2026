@@ -28,6 +28,20 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
+// Damit ein Absturz eine Ursache in den Logs hinterlaesst, bevor Railway den
+// Container neu startet (railway.toml: restartPolicyType = ON_FAILURE).
+process.on('uncaughtException', (err) => {
+  console.error('💥 Uncaught Exception:', err);
+  console.error('📊 Memory usage at crash:', process.memoryUsage());
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('💥 Unhandled Rejection:', reason);
+  console.error('📊 Memory usage at crash:', process.memoryUsage());
+  process.exit(1);
+});
+
 // Initialize Express
 const app = express();
 const PORT = parseInt(process.env.PORT || '') || 3001;
