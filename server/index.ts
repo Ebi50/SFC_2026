@@ -193,7 +193,7 @@ async function startServer() {
     }
 
     // Start server
-    app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`🌐 CORS enabled for origins: ${allowedOrigins.join(', ')}`);
       console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -211,6 +211,16 @@ async function startServer() {
         console.log(`🚂 Railway URL: https://${process.env.RAILWAY_PUBLIC_DOMAIN}`);
       }
     });
+
+    // Sauberes Herunterfahren bei Redeploys: ohne das interpretiert Railway das
+    // Beenden des alten Containers als Absturz (SIGTERM ohne Reaktion -> Crash-Mail).
+    const shutdown = (signal: string) => {
+      console.log(`👋 ${signal} empfangen, fahre Server sauber herunter...`);
+      server.close(() => process.exit(0));
+      setTimeout(() => process.exit(0), 5000).unref();
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
