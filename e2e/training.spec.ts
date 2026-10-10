@@ -24,7 +24,7 @@ async function login(page: Page, email: string) {
 
 test('/training ist öffentlich erreichbar und zeigt Hinweise, Plan und Katalog', async ({ page }) => {
   await page.goto('/training');
-  await expect(page.getByRole('heading', { name: /Hüfte & Rücken – Training/ })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Hüfte & Rücken' })).toBeVisible();
   await expect(page.getByText('Einloggen, um Fortschritt, Einstellungen und Verlauf geräteübergreifend zu speichern.')).toBeVisible();
   await expect(page.getByText(/ersetzen keine ärztliche oder physiotherapeutische Beratung/)).toBeVisible();
   await expect(page.getByRole('button', { name: /Training starten/ })).toBeVisible();
@@ -79,7 +79,7 @@ test('nach Login: abhaken, neu laden, Haken ist noch da; Demo-Daten werden über
   await expect(page).toHaveURL(/\/training\/plan$/);
   await expect(page.getByRole('tab', { name: 'Mein Tagesplan' })).toBeVisible();
 
-  const card = page.locator('[data-testid^="card-"]').nth(1);
+  const card = page.locator('[data-testid^="card-"]').filter({ has: page.locator('button[aria-pressed="false"]') }).first();
   const testId = await card.getAttribute('data-testid');
   const check = card.getByRole('button', { name: /Erledigt/ });
   await expect(check).toHaveAttribute('aria-pressed', 'false');
@@ -108,4 +108,21 @@ test('nach Login: abhaken, neu laden, Haken ist noch da; Demo-Daten werden über
   await page.getByRole('button', { name: 'Ja, löschen' }).click();
   await page.getByRole('tab', { name: 'Verlauf' }).click();
   await expect(page.getByText('Noch keine erledigten Übungen.')).toBeVisible();
+});
+
+test('Schriften kommen lokal, Menü hat die Kategorie Training', async ({ page }, info) => {
+  const external: string[] = [];
+  page.on('request', r => { if (/fonts\.(googleapis|gstatic)\.com/.test(r.url())) external.push(r.url()); });
+  await page.goto('/');
+  await page.evaluate(() => document.fonts.ready);
+  expect(external).toEqual([]);
+  // lädt die Schrift explizit – muss von /fonts/ kommen
+  const loaded = await page.evaluate(async () => (await document.fonts.load('600 16px Oswald')).length);
+  expect(loaded).toBeGreaterThan(0);
+  expect(external).toEqual([]);
+
+  if (info.project.name === 'mobile') await page.locator('button:has(svg path[d^="M4 6h16"])').first().click();
+  await expect(page.getByRole('heading', { name: 'Training', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Hüfte & Rücken' }).click();
+  await expect(page).toHaveURL(/\/training$/);
 });

@@ -81,7 +81,7 @@ export const TrainingDay: React.FC<Props> = ({ store, userSeed, demo }) => {
 
       {BLOCKS.map(({ key, title }) => p[key].length > 0 && (
         <section key={key} className="flex flex-col gap-3" aria-labelledby={`h-${key}`}>
-          <h2 id={`h-${key}`} className="font-display text-lg font-semibold uppercase tracking-wider text-gray-500 m-0">{title}</h2>
+          <h2 id={`h-${key}`} className="text-2xl font-semibold text-red-600 m-0">{title}</h2>
           {p[key].map(it => (
             <ExerciseCard
               key={`${it.block}:${it.id}`}
@@ -97,7 +97,7 @@ export const TrainingDay: React.FC<Props> = ({ store, userSeed, demo }) => {
       ))}
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-lg font-semibold uppercase tracking-wider text-gray-500 m-0">Diese Woche</h2>
+        <h2 className="text-2xl font-semibold text-red-600 m-0">Diese Woche</h2>
         <WeekStrip
           cur={cur}
           today={today}

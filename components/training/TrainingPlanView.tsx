@@ -61,6 +61,7 @@ const Plan: React.FC<{ userId: string }> = ({ userId }) => {
 
   return (
     <TrainingShell
+      title="Mein Trainingsplan"
       subtitle="Dein persönlicher Plan – Fortschritt, Einstellungen und Verlauf werden in deinem Konto gespeichert."
       tabs={TABS}
       active={tab}

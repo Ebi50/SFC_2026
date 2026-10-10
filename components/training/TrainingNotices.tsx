@@ -2,7 +2,7 @@ import React from 'react';
 
 /** Pflicht-Hinweis: allgemeine Trainingsvorschläge, keine Beratung */
 export const HealthNotice: React.FC = () => (
-  <aside className="border-l-4 border-amber-500 bg-amber-50 text-amber-900 rounded-r-lg px-4 py-3 text-sm" role="note">
+  <aside className="bg-yellow-50 border-t border-yellow-200 text-gray-800 rounded-lg shadow px-4 py-3 text-sm" role="note">
     <b>Hinweis:</b> Die Übungen sind allgemeine Trainingsvorschläge und ersetzen keine ärztliche oder physiotherapeutische
     Beratung. Bei Schmerzen, Vorerkrankungen oder nach Verletzungen vorher fachlich abklären. Übungen nur im schmerzfreien
     Bereich ausführen; bei Schmerzen abbrechen.
@@ -17,17 +17,17 @@ interface LoginHintProps {
 }
 
 export const LoginHint: React.FC<LoginHintProps> = ({ isLoggedIn, onLogin, onRegister, onOpenPlan }) => (
-  <div className="bg-white border border-primary/40 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3 shadow-sm">
+  <div className="bg-gradient-to-r from-red-600 via-red-700 to-red-800 text-white rounded-xl px-5 py-4 flex flex-wrap items-center gap-3 shadow-lg">
     {isLoggedIn ? (
       <>
-        <p className="flex-1 min-w-[200px] m-0 text-secondary">Du bist angemeldet. Dein persönlicher Plan speichert Fortschritt, Einstellungen und Verlauf geräteübergreifend.</p>
-        <button type="button" onClick={onOpenPlan} className="bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg px-4 py-2">Zu meinem Plan</button>
+        <p className="flex-1 min-w-[200px] m-0">Du bist angemeldet. Dein persönlicher Plan speichert Fortschritt, Einstellungen und Verlauf geräteübergreifend.</p>
+        <button type="button" onClick={onOpenPlan} className="bg-white text-red-700 hover:bg-red-50 font-semibold rounded-lg px-4 py-2">Zu meinem Plan</button>
       </>
     ) : (
       <>
-        <p className="flex-1 min-w-[200px] m-0 text-secondary font-semibold">Einloggen, um Fortschritt, Einstellungen und Verlauf geräteübergreifend zu speichern.</p>
-        <button type="button" onClick={onLogin} className="bg-primary hover:bg-primary-dark text-white font-semibold rounded-lg px-4 py-2">Einloggen</button>
-        <button type="button" onClick={onRegister} className="border border-gray-300 hover:border-primary font-semibold rounded-lg px-4 py-2">Registrieren</button>
+        <p className="flex-1 min-w-[200px] m-0 font-semibold">Einloggen, um Fortschritt, Einstellungen und Verlauf geräteübergreifend zu speichern.</p>
+        <button type="button" onClick={onLogin} className="bg-white text-red-700 hover:bg-red-50 font-semibold rounded-lg px-4 py-2">Einloggen</button>
+        <button type="button" onClick={onRegister} className="border border-white/70 hover:bg-white/10 font-semibold rounded-lg px-4 py-2">Registrieren</button>
       </>
     )}
   </div>
