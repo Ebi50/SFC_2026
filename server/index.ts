@@ -18,6 +18,7 @@ import userAuthRouter from './routes/userAuth';
 import dataTransferRouter from './routes/dataTransfer';
 import adminRouter from './routes/admin';
 import backupRouter from './routes/backup';
+import trainingRouter from './routes/training';
 
 // Initialize database
 import { initDatabase, db } from './database';
@@ -169,6 +170,7 @@ async function startServer() {
     app.use('/api/data', dataTransferRouter);
     app.use('/api/admin', adminRouter);
     app.use('/api/backup', backupRouter);
+    app.use('/api/training', trainingRouter);
 
     // Health check endpoint
     app.get('/api/health', (req, res) => {

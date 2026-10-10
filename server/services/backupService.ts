@@ -9,7 +9,8 @@ const isRailway = !!process.env.RAILWAY_ENVIRONMENT;
 const BACKUP_TABLES = [
   'seasons', 'participants', 'users', 'events', 'results', 'teams',
   'team_members', 'event_registrations', 'settings', 'season_settings',
-  'home_content', 'reglement_files'
+  'home_content', 'reglement_files',
+  'training_settings', 'training_log', 'training_feedback'
 ];
 
 export function exportDatabase() {

@@ -1,13 +1,17 @@
 import sqlite from 'better-sqlite3';
 const Database = sqlite;
 import * as path from 'path';
+import { initTrainingTables } from './trainingSchema';
 
 // Database path configuration:
 // - Railway (production): /data/database.sqlite3 (persistent volume)
 // - Development: ../database.sqlite3 (local)
 let dbPath: string;
 
-if (process.env.NODE_ENV === 'production') {
+if (process.env.DATABASE_PATH) {
+  // z. B. eigene Datenbank für E2E-Tests
+  dbPath = process.env.DATABASE_PATH;
+} else if (process.env.NODE_ENV === 'production') {
   dbPath = '/data/database.sqlite3';
 } else {
   dbPath = path.join(process.cwd(), '..', 'database.sqlite3');
@@ -234,6 +238,8 @@ export function initDatabase() {
   // Add photo consent tracking (separate from waiver, DSGVO-compliant)
   addColumnIfNotExists('participants', 'fotoConsent', 'BOOLEAN DEFAULT 0');
   addColumnIfNotExists('participants', 'fotoConsentAt', 'DATETIME');
+
+  initTrainingTables(db);
 
   // Auto-set dataConsent for participants who have a user account (self-registered)
   try {

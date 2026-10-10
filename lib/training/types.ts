@@ -83,5 +83,14 @@ export interface DayPlan {
   sec: number;
 }
 
-/** Erledigte Übungen: { "YYYY-MM-DD": { "block:id": true } } */
-export type DoneMap = Record<string, Record<string, boolean>>;
+/** Ein erledigter Eintrag – identisch im Browser-Speicher und in der Datenbank */
+export interface LogEntry {
+  day: string;
+  block: Block;
+  exerciseId: string;
+  variantIndex: number;
+  sets: number;
+  value: number;
+  unit: 'reps' | 'sec';
+  completedAt?: string;
+}
