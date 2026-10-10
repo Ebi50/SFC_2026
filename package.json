@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "start": "tsx server/index.ts",
     "restart": "powershell -ExecutionPolicy Bypass -File restart-servers-simple.ps1",
-    "restart-bat": "restart-servers.bat"
+    "restart-bat": "restart-servers.bat",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=20"
@@ -37,9 +39,11 @@
     "tsx": "^4.20.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@types/node": "^22.18.8",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vitest": "^3.2.7"
   }
 }
