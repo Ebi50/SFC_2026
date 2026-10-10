@@ -54,3 +54,8 @@ uploads/
 # Test-Artefakte
 test-results/
 playwright-report/
+
+# Lokale Vorlagen und Notizen (nicht für das Repository)
+Huefte-Ruecken-Tagesplan.html
+SFC-Trainingsplan-Einbindung-Prompt.md
+blaupause-supabase-migration.md
