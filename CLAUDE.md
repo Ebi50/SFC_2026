@@ -137,7 +137,12 @@ SFC_APP/
 │   ├── StreckenView.tsx  # GPX-Strecken
 │   ├── ReglementView.tsx # Reglement-Anzeige
 │   ├── ImpressumView.tsx # Impressum (Iframe)
+│   ├── layout/           # App-Hülle: Sidebar, navItems, SeasonBar, ViewSwitch, AppModals
+│   ├── training/         # Trainingsplan „Hüfte & Rücken“ (UI, Timer, Speicher-Hooks)
 │   └── ...
+├── hooks/                # useSeasonData (Laden/Saison), useParticipantEditor, useEventEditor
+├── lib/training/         # Trainingsdaten + Planer (reine Funktionen, Unit-Tests)
+├── e2e/                  # Playwright-Tests (eigene Test-DB, Ports 3101/5001)
 ├── server/
 │   ├── index.ts          # Express-Server (CORS, Session, Static, Routing)
 │   ├── database.ts       # SQLite-Init + Schema
@@ -150,12 +155,14 @@ SFC_APP/
 │   │   ├── reglement.ts  # Reglement-Upload/Download
 │   │   ├── settings.ts
 │   │   ├── seasons.ts
-│   │   └── home.ts
+│   │   ├── home.ts
+│   │   └── training.ts   # Trainingsplan-API (nur mit Login)
 │   └── services/         # Business-Logik
+├── services/             # Frontend: API-Client, Wertung, seasonData (reine Funktionen)
 ├── src/pages/            # Seiten-Komponenten
-├── public/               # Statische Dateien → dist/
-├── index.html            # Vite Entry Point
-├── App.tsx               # React App Root
+├── public/               # Statische Dateien → dist/ (fonts/, vendor/, training-figs/)
+├── index.html            # Vite Entry Point (keine CDN-Skripte/Google Fonts!)
+├── App.tsx               # React App Root (nur Hülle, Logik in hooks/)
 ├── vite.config.ts        # Vite-Konfiguration
 ├── railway.toml          # Railway Deploy-Config
 └── types.ts              # TypeScript-Typen
@@ -166,6 +173,12 @@ SFC_APP/
 ## Workflow
 
 1. Änderungen lokal in VS Code bearbeiten
-2. `git add . && git commit -m "Beschreibung" && git push`
-3. Railway deployed automatisch über GitHub-Integration
-4. Prüfe Deploy-Logs im Railway Dashboard bei Problemen
+2. **Vor jedem Commit/Push:** `npm run check` (Unit-Tests, Build, Playwright-E2E) – muss grün sein
+3. `git add . && git commit -m "Beschreibung" && git push`
+4. Railway deployed automatisch über GitHub-Integration
+5. Prüfe Deploy-Logs im Railway Dashboard bei Problemen
+
+### Drittanbieter
+
+Keine Skripte, Styles oder Schriften von CDNs/Google laden (DSGVO). Tailwind wird beim Build erzeugt,
+Bibliotheken kommen über npm, statische Assets liegen in `public/`. Der E2E-Test prüft das.

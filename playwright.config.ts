@@ -27,7 +27,7 @@ export default defineConfig({
     {
       command: 'npx tsx server/index.ts',
       url: `http://localhost:${API_PORT}/api/health`,
-      env: { PORT: String(API_PORT), DATABASE_PATH: DB, NODE_ENV: 'development' },
+      env: { PORT: String(API_PORT), DATABASE_PATH: DB, NODE_ENV: 'development', ADMIN_EMAILS: 'admin-desktop@example.com,admin-mobile@example.com' },
       reuseExistingServer: false,
       timeout: 60_000,
     },

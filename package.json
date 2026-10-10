@@ -12,7 +12,8 @@
     "restart": "powershell -ExecutionPolicy Bypass -File restart-servers-simple.ps1",
     "restart-bat": "restart-servers.bat",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "check": "vitest run && vite build && playwright test"
   },
   "engines": {
     "node": ">=20"
