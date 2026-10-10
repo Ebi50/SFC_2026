@@ -50,3 +50,7 @@ dist-ssr
 
 # Uploaded content (stored in /data/ on Railway, not in git)
 uploads/
+
+# Test-Artefakte
+test-results/
+playwright-report/
