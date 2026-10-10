@@ -110,10 +110,13 @@ test('nach Login: abhaken, neu laden, Haken ist noch da; Demo-Daten werden über
   await expect(page.getByText('Noch keine erledigten Übungen.')).toBeVisible();
 });
 
-test('Schriften kommen lokal, Menü hat die Kategorie Training', async ({ page }, info) => {
+test('keine Drittanbieter-Requests, Schriften lokal, Menü hat die Kategorie Training', async ({ page }, info) => {
   const external: string[] = [];
-  page.on('request', r => { if (/fonts\.(googleapis|gstatic)\.com/.test(r.url())) external.push(r.url()); });
-  await page.goto('/');
+  page.on('request', r => { if (!/^(http:\/\/localhost|data:|blob:)/.test(r.url())) external.push(r.url()); });
+  for (const p of ['/training', '/training/plan', '/']) {
+    await page.goto(p);
+    await page.waitForLoadState('networkidle');
+  }
   await page.evaluate(() => document.fonts.ready);
   expect(external).toEqual([]);
   // lädt die Schrift explizit – muss von /fonts/ kommen

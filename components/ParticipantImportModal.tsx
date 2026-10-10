@@ -4,10 +4,6 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { Participant, Settings, PerfClass, Gender, GroupLabel } from '../types';
 import { CloseIcon, UploadIcon } from './icons';
 
-// Make PapaParse and XLSX available from the global scope
-declare const Papa: any;
-declare const XLSX: any;
-
 interface ParticipantImportModalProps {
   onClose: () => void;
   onImport: (participants: Omit<Participant, 'id'>[]) => void;
@@ -42,7 +38,7 @@ export const ParticipantImportModal: React.FC<ParticipantImportModalProps> = ({ 
 
   const existingEmails = useMemo(() => new Set(existingParticipants.map(p => p.email.toLowerCase())), [existingParticipants]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile) {
       setFile(selectedFile);
@@ -83,6 +79,8 @@ export const ParticipantImportModal: React.FC<ParticipantImportModalProps> = ({ 
       };
 
       if (selectedFile.name.endsWith('.csv')) {
+          // Parser werden erst beim Import nachgeladen (gebündelt, kein CDN)
+          const Papa = (await import('papaparse')).default;
           Papa.parse(selectedFile, {
             header: true,
             skipEmptyLines: true,
@@ -95,6 +93,7 @@ export const ParticipantImportModal: React.FC<ParticipantImportModalProps> = ({ 
             },
           });
       } else if (selectedFile.name.endsWith('.xlsx')) {
+          const XLSX = await import('xlsx');
           const reader = new FileReader();
           reader.onload = (e) => {
               try {

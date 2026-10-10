@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GPX Viewer</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/vendor/leaflet/leaflet.css" />
   <style>
     body {
       margin: 0;
@@ -49,7 +49,7 @@
     <div class="info-item"><span class="info-label">Aufstieg:</span> <span id="elevation">-</span></div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/vendor/leaflet/leaflet.js"></script>
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const gpxFile = urlParams.get('file');
