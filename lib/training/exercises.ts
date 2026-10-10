@@ -211,5 +211,5 @@ export const TYPE_LABEL: Record<Exercise['type'], string> = { mob: 'Mobilität',
 export const ORG_LABEL: Record<Exercise['org'], string> = { basis: 'Basisprogramm', add: 'Ergänzung Radsport' };
 
 export function figSrc(id: string, i: 0 | 1): string {
-  return `/training/figs/${id}-${i}.svg`;
+  return `/training-figs/${id}-${i}.svg`;
 }

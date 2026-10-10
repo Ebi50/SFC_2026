@@ -6,7 +6,7 @@ interface UserLoginProps {
   onNavigate: (view: View) => void;
 }
 
-export const UserLogin: React.FC<UserLoginProps> = ({ onNavigate }) => {
+export const UserLogin: React.FC<UserLoginProps> = ({ onNavigate, afterLogin = 'events' }) => {
   const { userLogin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +21,7 @@ export const UserLogin: React.FC<UserLoginProps> = ({ onNavigate }) => {
 
     try {
       await userLogin(email, password);
-      onNavigate('events');
+      onNavigate(afterLogin);
     } catch (err: any) {
       setError(err.message || 'Anmeldung fehlgeschlagen');
     } finally {
