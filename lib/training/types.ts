@@ -81,6 +81,8 @@ export interface DayPlan {
   main: PlanItem[];
   cool: PlanItem[];
   sec: number;
+  /** Zusatzsätze über das übliche Maß, weil der Tag sonst kürzer als gewünscht wäre */
+  extraSets: boolean;
 }
 
 /** Ein erledigter Eintrag – identisch im Browser-Speicher und in der Datenbank */

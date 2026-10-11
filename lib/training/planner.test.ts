@@ -19,6 +19,17 @@ describe('plan()', () => {
     }
   });
 
+  it('erreicht auch an leichten Tagen die gewünschte Dauer (±2 min) und markiert Zusatzsätze', () => {
+    for (const dur of [30, 45, 60]) {
+      for (const d of days(28).filter(x => DAYS[weekday(x)].light)) {
+        const p = plan(d, opts(dur));
+        expect(minutes(p, opts(dur).settings)).toBeGreaterThanOrEqual(dur - 2);
+        if (dur >= 45) expect(p.extraSets).toBe(true);
+      }
+    }
+    expect(plan(START, opts(20)).extraSets).toBe(false);
+  });
+
   it('enthält keine Übung doppelt', () => {
     for (const dur of [10, 30, 60]) {
       for (const d of days(56)) {

@@ -68,6 +68,11 @@ export const TrainingDay: React.FC<Props> = ({ store, userSeed, demo }) => {
         <p className="text-gray-600 m-0 max-w-prose">
           {p.cfg.light ? 'Leichter Tag: Beweglichkeit im Vordergrund, Kraftübungen nur locker.' : 'Sauber und kontrolliert vor schwer: lieber eine Wiederholung weniger als eine unsaubere.'}
         </p>
+        {p.extraSets && (
+          <p className="m-0 max-w-prose text-sm bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-3 py-2" role="note" data-testid="extra-sets-note">
+            An diesem Tag gibt es nur wenige lockere Übungen. Damit deine eingestellten {settings.dur} min erreicht werden, enthält der Plan zusätzliche Sätze – vor allem bei der Mobilität. Die Dauer bestimmst du weiterhin über „Gesamtdauer“.
+          </p>
+        )}
         <div className="h-1.5 bg-gray-200 rounded overflow-hidden" role="progressbar" aria-label="Fortschritt heute" aria-valuemin={0} aria-valuemax={all.length} aria-valuenow={doneCount}>
           <div className="h-full bg-green-600 transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${(100 * doneCount) / all.length}%` }} />
         </div>

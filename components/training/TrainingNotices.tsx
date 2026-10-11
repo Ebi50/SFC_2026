@@ -42,7 +42,7 @@ export const TrainingHelp: React.FC<{ demo: boolean }> = ({ demo }) => (
       <li>4-Wochen-Zyklus ab deinem Startdatum: Woche 1 Einstieg, Woche 2–3 mehr Umfang, Woche 4 Entlastung. Danach beginnt der Zyklus neu. Das Startdatum lässt sich oben ändern.</li>
       <li>Startwerte – an das eigene Niveau anpassen. Lieber eine Wiederholung weniger als eine unsaubere.</li>
       <li>„Training starten“ führt nacheinander durch alle Übungen des Tages: Ansage der nächsten Übung mit Skizzen (Zeit zum Einrichten einstellbar), dann Sätze, Seitenwechsel und Pausen. Am Ende jeder Übung wird sie automatisch abgehakt.</li>
-      <li>Gesamtdauer: Der Plan füllt den Tag nach Priorität auf – erst die Schwerpunkt-Übungen des Wochentags, abwechselnd mit Mobilität, dann weitere Übungen. Bleibt Zeit übrig, gibt es einen Satz mehr; bei sehr kurzer Dauer werden Sätze reduziert.</li>
+      <li>Gesamtdauer: Der Plan füllt den Tag nach Priorität auf – erst die Schwerpunkt-Übungen des Wochentags, abwechselnd mit Mobilität, dann weitere Übungen. Bleibt Zeit übrig, gibt es einen Satz mehr; bei sehr kurzer Dauer werden Sätze reduziert. An leichten Tagen (Mittwoch, Sonntag) mit wenigen Übungen wird eine längere Wunschdauer mit zusätzlichen Sätzen gefüllt, vor allem bei der Mobilität – darauf weist ein Hinweis über dem Plan hin.</li>
       <li>„Basisprogramm“ = Grundübungen für Hüfte und Rücken. „Ergänzung Radsport“ = zusätzliche Übungen ohne Gewichte gegen typische Radsport-Defizite: verkürzte Hüftbeuger und Oberschenkel, Rundrücken und eingeschränkte Drehung der Brustwirbelsäule, schwache Rumpf- und Rückenstrecker-Ausdauer, schwacher seitlicher Po (Kniespur).</li>
       {demo
         ? <li>Ohne Login werden Häkchen und Einstellungen nur in diesem Browser gespeichert.</li>

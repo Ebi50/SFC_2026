@@ -96,6 +96,8 @@ export function minutes(p: DayPlan, s: TrainingSettings): number {
 }
 
 // ---------- Tagesplan ----------
+const EXTRA_MAX_SETS = 5;
+
 export function plan(date: string, opts: PlanOptions): DayPlan {
   const s = opts.settings;
   const dn = dayNum(date), seed = (opts.userSeed ?? 0) >>> 0;
@@ -156,8 +158,24 @@ export function plan(date: string, opts: PlanOptions): DayPlan {
       if (tot + add <= B) { tot += add; grew = true; } else m.sets--;
     }
   }
+  // Alle Übungen des Tages verplant und noch Zeit übrig (v. a. leichte Tage mit kleinem Pool):
+  // weitere Sätze bis zur gewünschten Dauer, Mobilität zuerst, damit der Tag locker bleibt.
+  let extraSets = false;
+  if (chosen.length === seq.length) {
+    const order = [...chosen.filter(x => x.block !== 'main'), ...mains()];
+    for (grew = true; grew;) {
+      grew = false;
+      for (const it of order) {
+        if (it.sets >= EXTRA_MAX_SETS) continue;
+        const before = itemSec(it, s);
+        it.sets++;
+        const add = itemSec(it, s) - before;
+        if (tot + add <= B) { tot += add; grew = extraSets = true; } else it.sets--;
+      }
+    }
+  }
   return {
-    cfg, wk,
+    cfg, wk, extraSets,
     warm: chosen.filter(x => x.block === 'warm'),
     main: shuffle(mains(), rng((dn * 31 + 7) ^ seed)),
     cool: chosen.filter(x => x.block === 'cool'),
