@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3';
 
-// Trainingsplan „Hüfte & Rücken“: nur Trainingsdaten, keine Gesundheitsangaben (Art. 9 DSGVO).
+// Trainingsplan „Mobilitätsübungen“: nur Trainingsdaten, keine Gesundheitsangaben (Art. 9 DSGVO).
 // Alle Tabellen hängen per ON DELETE CASCADE am Konto – Kontolöschung entfernt sie mit.
 export function initTrainingTables(db: Database) {
   db.exec(`

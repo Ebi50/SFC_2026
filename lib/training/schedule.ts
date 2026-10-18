@@ -1,16 +1,22 @@
 import type { DayConfig, TrainingSettings, WeekConfig } from './types';
 import { NONMOB } from './exercises';
 
-// Wochentag-Schwerpunkte (0 = Sonntag)
+// Wochentag-Schwerpunkte (0 = Sonntag): eine feste Anker-Übung, der Rest rotiert aus dem Pool
 export const DAYS: Record<number, DayConfig> = {
-  1: { t: 'Kraft beidbeinig & Rumpf', short: 'Kraft', fix: ['brs', 'curl', 'brr'], pool: ['thrust', 'deadbug', 'superman', 'pullapart', 'pushup'] },
-  2: { t: 'Einbein & Stabilität', short: 'Einbein', fix: ['bss', 'hinge', 'wall'], pool: ['slb', 'birddog', 'sideplank', 'pallof', 'wallslide'] },
-  3: { t: 'Mobilität & leichte Aktivierung', short: 'Mobil', fix: ['band', 'wallslide'], pool: ['r90', 'birddog', 'deadbug', 'brs'], light: true, mobFirst: true },
-  4: { t: 'Kraft einbeinig & Oberkörper', short: 'Kraft', fix: ['bss', 'slb'], pool: ['curl', 'hinge', 'thrust', 'monster', 'pushup', 'pullapart', 'superman'] },
-  5: { t: 'Hüftstabilität & Anti-Rotation', short: 'Stabil', fix: ['wall', 'band', 'pallof'], pool: ['r90', 'abduct', 'monster', 'sideplank', 'birddog', 'brs'] },
-  6: { t: 'Gemischt', short: 'Mix', fix: [], pool: NONMOB },
-  0: { t: 'Regeneration', short: 'Regen', fix: [], pool: ['brs', 'band', 'birddog', 'deadbug', 'wallslide'], light: true, mobFirst: true },
+  1: { t: 'Kraft beidbeinig & Rumpf', short: 'Kraft', anchor: 'brs', pool: ['curl', 'brr', 'thrust', 'squat', 'nordic', 'calfraise', 'deadbug', 'superman', 'plank', 'hollow', 'pullapart', 'pushup'] },
+  2: { t: 'Einbein & Stabilität', short: 'Einbein', anchor: 'bss', pool: ['hinge', 'wall', 'slb', 'revlunge', 'stepup', 'airplane', 'birddog', 'sideplank', 'copenhagen', 'clam', 'pallof', 'wallslide'] },
+  3: { t: 'Mobilität & leichte Aktivierung', short: 'Mobil', anchor: 'band', pool: ['wallslide', 'r90', 'birddog', 'deadbug', 'brs', 'clam', 'ywt'], light: true },
+  4: { t: 'Kraft einbeinig & Oberkörper', short: 'Kraft', anchor: 'slb', pool: ['bss', 'curl', 'hinge', 'thrust', 'revlunge', 'stepup', 'calfraise', 'monster', 'pushup', 'pullapart', 'superman', 'ywt'] },
+  5: { t: 'Hüftstabilität & Anti-Rotation', short: 'Stabil', anchor: 'wall', pool: ['band', 'pallof', 'r90', 'abduct', 'clam', 'monster', 'airplane', 'sideplank', 'copenhagen', 'plank', 'birddog', 'brs'] },
+  6: { t: 'Gemischt', short: 'Mix', pool: NONMOB },
+  0: { t: 'Regeneration', short: 'Regen', pool: ['brs', 'band', 'birddog', 'deadbug', 'wallslide', 'r90', 'clam', 'ywt'], light: true },
 };
+
+/** Zeitanteile der Blöcke an der Gesamtdauer */
+export const SPLIT = {
+  normal: { warm: 0.2, main: 0.65, cool: 0.15 },
+  light: { warm: 0.35, main: 0.4, cool: 0.25 },
+} as const;
 
 export const WEEKS: WeekConfig[] = [
   { n: 'Woche 1 · Einstieg', sets: 2, lvl: 0 },

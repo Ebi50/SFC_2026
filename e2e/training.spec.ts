@@ -24,7 +24,7 @@ async function login(page: Page, email: string) {
 
 test('/training ist öffentlich erreichbar und zeigt Hinweise, Plan und Katalog', async ({ page }) => {
   await page.goto('/training');
-  await expect(page.getByRole('heading', { level: 1, name: 'Hüfte & Rücken' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Mobilitätsübungen' })).toBeVisible();
   await expect(page.getByText('Einloggen, um Fortschritt, Einstellungen und Verlauf geräteübergreifend zu speichern.')).toBeVisible();
   await expect(page.getByText(/ersetzen keine ärztliche oder physiotherapeutische Beratung/)).toBeVisible();
   await expect(page.getByRole('button', { name: /Training starten/ })).toBeVisible();
@@ -38,11 +38,11 @@ test('/training ist öffentlich erreichbar und zeigt Hinweise, Plan und Katalog'
   await expect(page.locator('[data-testid^="card-"]').first().getByRole('button', { name: /Erledigt/ })).toHaveAttribute('aria-pressed', 'true');
 
   await page.getByRole('tab', { name: 'Übungskatalog' }).click();
-  await expect(page.locator('[data-testid^="catalog-"]')).toHaveCount(28);
+  await expect(page.locator('[data-testid^="catalog-"]')).toHaveCount(51);
   await page.getByRole('button', { name: 'Kraft', exact: true }).click();
   const strCount = await page.locator('[data-testid^="catalog-"]').count();
   expect(strCount).toBeGreaterThan(0);
-  expect(strCount).toBeLessThan(28);
+  expect(strCount).toBeLessThan(51);
 
   // Keine Personenbezüge aus dem Original
   await expect(page.getByText(/Physio-Programm|wie vom Physio|28\.09\.2026/)).toHaveCount(0);
@@ -126,6 +126,6 @@ test('keine Drittanbieter-Requests, Schriften lokal, Menü hat die Kategorie Tra
 
   if (info.project.name === 'mobile') await page.locator('button:has(svg path[d^="M4 6h16"])').first().click();
   await expect(page.getByRole('heading', { name: 'Training', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Hüfte & Rücken' }).click();
+  await page.getByRole('button', { name: 'Mobilitätsübungen' }).click();
   await expect(page).toHaveURL(/\/training$/);
 });

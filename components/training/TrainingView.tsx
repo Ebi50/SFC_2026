@@ -17,7 +17,7 @@ export const TrainingView: React.FC<{ onNavigate: (v: View) => void }> = ({ onNa
 
   return (
     <TrainingShell
-      title="Hüfte & Rücken"
+      title="Mobilitätsübungen"
       subtitle="Mobilität, Kraft und Stabilität ohne Gewichte – ein Tagesplan mit Ablauf-Timer, abgestimmt auf Radsportler."
       tabs={[{ key: 'today', label: 'Heutiger Plan (Demo)' }, { key: 'catalog', label: 'Übungskatalog' }]}
       active={tab}

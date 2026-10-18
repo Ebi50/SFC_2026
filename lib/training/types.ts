@@ -17,6 +17,8 @@ export interface Exercise {
   name: string;
   type: ExerciseType;
   org: 'basis' | 'add';
+  /** nur Mobilität: dynamisch im Aufwärmen oder statisch im Ausklang */
+  phase?: 'warm' | 'cool';
   side?: boolean;
   goal: string;
   musc: string;
@@ -26,13 +28,18 @@ export interface Exercise {
   v: Variant[];
 }
 
-export interface DayConfig {
+/** Was die Oberfläche über einen Tag anzeigt */
+export interface DayLabel {
   t: string;
   short: string;
-  fix: string[];
-  pool: string[];
   light?: boolean;
-  mobFirst?: boolean;
+}
+
+export interface DayConfig extends DayLabel {
+  /** feste Übung, die an diesem Wochentag immer dabei ist */
+  anchor?: string;
+  /** Schwerpunkt-Übungen, aus denen rotierend gewählt wird */
+  pool: string[];
 }
 
 export interface WeekConfig {
@@ -75,13 +82,13 @@ export interface PlanItem {
 }
 
 export interface DayPlan {
-  cfg: DayConfig;
+  cfg: DayLabel;
   wk: WeekConfig;
   warm: PlanItem[];
   main: PlanItem[];
   cool: PlanItem[];
   sec: number;
-  /** Zusatzsätze über das übliche Maß, weil der Tag sonst kürzer als gewünscht wäre */
+  /** Zusatzsätze über das übliche Maß, weil es für die gewünschte Dauer zu wenige passende Übungen gibt */
   extraSets: boolean;
 }
 

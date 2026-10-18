@@ -138,7 +138,7 @@ SFC_APP/
 │   ├── ReglementView.tsx # Reglement-Anzeige
 │   ├── ImpressumView.tsx # Impressum (Iframe)
 │   ├── layout/           # App-Hülle: Sidebar, navItems, SeasonBar, ViewSwitch, AppModals
-│   ├── training/         # Trainingsplan „Hüfte & Rücken“ (UI, Timer, Speicher-Hooks)
+│   ├── training/         # Trainingsplan „Mobilitätsübungen“ (UI, Timer, Speicher-Hooks)
 │   └── ...
 ├── hooks/                # useSeasonData (Laden/Saison), useParticipantEditor, useEventEditor
 ├── lib/training/         # Trainingsdaten + Planer (reine Funktionen, Unit-Tests)

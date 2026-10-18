@@ -17,9 +17,9 @@ interface Props {
 }
 
 const BLOCKS: { key: Block; title: string }[] = [
-  { key: 'warm', title: 'Aufwärmen & Mobilität' },
+  { key: 'warm', title: 'Aufwärmen · dynamische Mobilität' },
   { key: 'main', title: 'Hauptteil' },
-  { key: 'cool', title: 'Abschluss' },
+  { key: 'cool', title: 'Ausklang · Dehnen' },
 ];
 const navBtn = 'font-semibold bg-white border border-gray-300 rounded-lg px-3 py-1.5 hover:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary';
 
@@ -70,7 +70,7 @@ export const TrainingDay: React.FC<Props> = ({ store, userSeed, demo }) => {
         </p>
         {p.extraSets && (
           <p className="m-0 max-w-prose text-sm bg-amber-50 border border-amber-200 text-amber-900 rounded-lg px-3 py-2" role="note" data-testid="extra-sets-note">
-            An diesem Tag gibt es nur wenige lockere Übungen. Damit deine eingestellten {settings.dur} min erreicht werden, enthält der Plan zusätzliche Sätze – vor allem bei der Mobilität. Die Dauer bestimmst du weiterhin über „Gesamtdauer“.
+            Für deine eingestellten {settings.dur} min gibt es an diesem Tag nicht genug passende Übungen. Damit die Dauer erreicht wird, enthält der Hauptteil zusätzliche Sätze. Die Dauer bestimmst du weiterhin über „Gesamtdauer“.
           </p>
         )}
         <div className="h-1.5 bg-gray-200 rounded overflow-hidden" role="progressbar" aria-label="Fortschritt heute" aria-valuemin={0} aria-valuemax={all.length} aria-valuenow={doneCount}>

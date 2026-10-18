@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useAuth } from '../AuthContext';
-import { hash } from '../../lib/training/planner';
+import { hash } from '../../lib/training/random';
 import { TrainingShell } from './TrainingShell';
 import { TrainingDay } from './TrainingDay';
 import { ExerciseCatalog } from './ExerciseCatalog';
