@@ -37,8 +37,6 @@ dist-ssr
 .env.local
 
 # Credentials
-**/google-cloud-credentials.json
-**/service-account-key.json
 **/credentials/*
 
 # Large files (except public assets needed for deployment)

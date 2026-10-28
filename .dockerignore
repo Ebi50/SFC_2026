@@ -9,8 +9,6 @@ npm-debug.log
 .vscode
 
 # Credentials
-**/google-cloud-credentials.json
-**/service-account-key.json
 **/credentials/*
 
 # Große Dateien
